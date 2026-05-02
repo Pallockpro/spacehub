@@ -12,63 +12,107 @@ if not success or not Rayfield then
     return
 end
 
--- Apply Space Theme (dark, neon accents, starry background)
+-- ========== ANIMATED SPACE BACKGROUND ==========
+-- Creates a moving starfield behind the GUI (very low performance impact)
+local function createAnimatedBackground()
+    local bgGui = Instance.new("ScreenGui")
+    bgGui.Name = "SpaceBackground"
+    bgGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    bgGui.IgnoreGuiInset = true
+    bgGui.ResetOnSpawn = false
+    bgGui.Parent = game:GetService("CoreGui")
+    
+    -- Create a container frame that fills the screen
+    local bgFrame = Instance.new("Frame")
+    bgFrame.Size = UDim2.new(1, 0, 1, 0)
+    bgFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- deep black base
+    bgFrame.BorderSizePixel = 0
+    bgFrame.ZIndex = 0
+    bgFrame.Parent = bgGui
+    
+    -- Use three layers of stars moving at different speeds (parallax)
+    local starLayers = {
+        { speed = 0.2, image = "rbxassetid://224329350" },  -- very slow, far stars
+        { speed = 0.5, image = "rbxassetid://135740367" },  -- medium, closer stars
+        { speed = 1.0, image = "rbxassetid://242247539" }   -- fast, nearby stars
+    }
+    
+    for i, layer in ipairs(starLayers) do
+        -- Each layer consists of two tiled images to create seamless scrolling
+        local img1 = Instance.new("ImageLabel")
+        img1.Image = layer.image
+        img1.ImageTransparency = 0.85
+        img1.ScaleType = Enum.ScaleType.Tile
+        img1.TileSize = UDim2.new(1, 0, 1, 0)  -- tile across whole screen
+        img1.Size = UDim2.new(1, 0, 1, 0)
+        img1.Position = UDim2.new(0, 0, 0, 0)
+        img1.BackgroundTransparency = 1
+        img1.ZIndex = 0
+        img1.Parent = bgFrame
+        
+        -- Second duplicate for seamless wrap
+        local img2 = Instance.new("ImageLabel")
+        img2.Image = layer.image
+        img2.ImageTransparency = 0.85
+        img2.ScaleType = Enum.ScaleType.Tile
+        img2.TileSize = UDim2.new(1, 0, 1, 0)
+        img2.Size = UDim2.new(1, 0, 1, 0)
+        img2.Position = UDim2.new(1, 0, 0, 0)  -- placed to the right
+        img2.BackgroundTransparency = 1
+        img2.ZIndex = 0
+        img2.Parent = bgFrame
+        
+        -- Store both images and speed for animation
+        layer.images = {img1, img2}
+    end
+    
+    -- Animation loop (moves the layers horizontally)
+    local offset = 0
+    local runService = game:GetService("RunService")
+    local connection
+    connection = runService.RenderStepped:Connect(function(deltaTime)
+        offset = offset + 5 * deltaTime  -- base scroll speed
+        for _, layer in ipairs(starLayers) do
+            local scroll = (offset * layer.speed) % 1
+            for _, img in ipairs(layer.images) do
+                img.Position = UDim2.new(1 - scroll, 0, 0, 0)
+            end
+            -- Wrap the pair: if first image goes completely off screen, reset both
+            if layer.images[1].Position.X.Scale <= -1 then
+                layer.images[1].Position = UDim2.new(1, 0, 0, 0)
+                layer.images[2].Position = UDim2.new(2, 0, 0, 0)
+            end
+        end
+    end)
+    
+    -- Cleanup when the main GUI is destroyed (optional)
+    return bgGui, connection
+end
+
+-- Start the animated background
+local bgGui, animConnection = createAnimatedBackground()
+
+-- ========== SPACE THEME FOR RAYFIELD ==========
+-- Apply a semi‑transparent dark theme so the background shows through
 local function applySpaceTheme()
-    -- Wait for the Rayfield GUI to be created
     local gui = game:GetService("CoreGui"):FindFirstChild("Rayfield")
     if gui then
-        -- Set overall background to transparent so we can add our own
         local mainFrame = gui:FindFirstChild("MainFrame")
         if mainFrame then
             mainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 20)
-            mainFrame.BackgroundTransparency = 0.15
+            mainFrame.BackgroundTransparency = 0.25  -- slightly transparent to see background
             mainFrame.BorderSizePixel = 0
         end
-        
-        -- Add a starfield background (static image, no animation)
-        local starfield = Instance.new("ImageLabel")
-        starfield.Name = "StarfieldBG"
-        starfield.Image = "rbxassetid://135740367" -- space/starfield decal ID (light stars)
-        starfield.ImageColor3 = Color3.fromRGB(80, 100, 200)
-        starfield.ImageTransparency = 0.85
-        starfield.ScaleType = Enum.ScaleType.Crop
-        starfield.BackgroundTransparency = 1
-        starfield.Size = UDim2.new(1, 0, 1, 0)
-        starfield.Position = UDim2.new(0, 0, 0, 0)
-        starfield.ZIndex = 0
-        starfield.Parent = gui
-        
-        -- Move starfield behind the main interface
-        local mainFrame1 = gui:FindFirstChild("MainFrame")
-        if mainFrame1 then
-            mainFrame1.ZIndex = 2
-        end
-        for _, child in pairs(gui:GetChildren()) do
-            if child:IsA("Frame") and child ~= starfield then
-                child.ZIndex = 2
+        -- Make all child frames slightly transparent
+        for _, child in pairs(gui:GetDescendants()) do
+            if child:IsA("Frame") and child ~= mainFrame and not child:FindFirstChild("SpaceBackground") then
+                child.BackgroundTransparency = math.min(child.BackgroundTransparency, 0.4)
             end
-        end
-        
-        -- Change accent colors (buttons, sliders, etc.)
-        local styleSheet = gui:FindFirstChild("StyleSheet")
-        if styleSheet then
-            -- We can't directly edit StyleSheet, but we can override colors via theme
-            -- Rayfield uses Color3 values from its theme; better to set custom theme on creation
         end
     end
 end
 
--- Custom theme for Rayfield (space colors)
-local customTheme = {
-    SchemeColor = Color3.fromRGB(0, 200, 255),     -- neon cyan
-    Background = Color3.fromRGB(8, 8, 20),         -- deep space
-    Header = Color3.fromRGB(15, 15, 35),           -- dark purple
-    TextColor = Color3.fromRGB(220, 220, 255),     -- icy white
-    ElementColor = Color3.fromRGB(30, 30, 60),     -- dark indigo
-    Shadow = Color3.fromRGB(0, 0, 0)
-}
-
--- Create the Rayfield Window with custom theme
+-- Create the Rayfield Window
 local Window = Rayfield:CreateWindow({
     Name = "✨ Space Hub ✨",
     LoadingTitle = "Warp Drive Engaging",
@@ -86,15 +130,11 @@ local Window = Rayfield:CreateWindow({
     KeySystem = false
 })
 
--- Attempt to inject space background and colors
+-- Apply transparency after a short delay (when Rayfield GUI is built)
+task.wait(0.5)
 pcall(applySpaceTheme)
 
--- Optional: Add subtle star twinkle without performance hit (very limited)
-task.delay(2, function()
-    pcall(applySpaceTheme)
-end)
-
--- ==================== MAIN TAB (SCRIPTS) ====================
+-- ========== MAIN TAB (SCRIPTS) ==========
 local MainTab = Window:CreateTab("🚀 Scripts", 4483362458)
 
 -- Fly Scripts Section
@@ -587,11 +627,11 @@ MainTab:CreateButton({
     end
 })
 
--- ==================== APEIROPHOBIA TAB ====================
+-- ========== APEIROPHOBIA TAB ==========
 local ApeiroTab = Window:CreateTab("🌌 Apeirophobia", 4483362463)
 local ApeiroSection = ApeiroTab:CreateSection("Backrooms Helpers")
 
--- Infinite Stamina Script
+-- Infinite Stamina
 ApeiroTab:CreateButton({
     Name = "🏃 Infinite Stamina",
     Callback = function()
@@ -642,7 +682,7 @@ ApeiroTab:CreateButton({
     end
 })
 
--- Item ESP + Exit Finder
+-- Item ESP
 ApeiroTab:CreateButton({
     Name = "🔍 Item ESP + Exit Finder",
     Callback = function()
@@ -720,7 +760,7 @@ ApeiroTab:CreateButton({
     end
 })
 
--- Exit ESP (Specifically for the exit door)
+-- Exit ESP
 ApeiroTab:CreateButton({
     Name = "🚪 Exit ESP (Find the Exit)",
     Callback = function()
@@ -775,7 +815,7 @@ ApeiroTab:CreateButton({
     end
 })
 
--- X-Ray Vision (See Through Walls)
+-- X-Ray Vision
 ApeiroTab:CreateButton({
     Name = "🩻 X-Ray Vision (See Through Walls)",
     Callback = function()
@@ -847,7 +887,7 @@ ApeiroTab:CreateButton({
     end
 })
 
--- Auto Clicker (Spam Click)
+-- Auto Clicker
 ApeiroTab:CreateButton({
     Name = "🖱️ Auto Clicker (Spam Click)",
     Callback = function()
@@ -897,7 +937,7 @@ ApeiroTab:CreateButton({
     end
 })
 
--- Speed Boost (Safe)
+-- Speed Boost (Safe) - local GUI
 ApeiroTab:CreateButton({
     Name = "⚡ Speed Boost (Safe)",
     Callback = function()
@@ -908,7 +948,6 @@ ApeiroTab:CreateButton({
             
             local speedGui = Instance.new("ScreenGui")
             local speedFrame = Instance.new("Frame")
-            local speedSlider = Instance.new("Frame")
             local currentSpeedLabel = Instance.new("TextLabel")
             local speedValueLabel = Instance.new("TextLabel")
             
@@ -948,7 +987,6 @@ ApeiroTab:CreateButton({
             speedHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             speedHandle.Parent = speedBar
             
-            local speedValueLabel = Instance.new("TextLabel")
             speedValueLabel.Size = UDim2.new(1, 0, 0, 20)
             speedValueLabel.Position = UDim2.new(0, 0, 0, 60)
             speedValueLabel.Text = "Speed: 16"
@@ -962,7 +1000,6 @@ ApeiroTab:CreateButton({
                     dragging = true
                 end
             end)
-            
             speedHandle.InputEnded:Connect(function(input)
                 if input.UserInputType == Enum.UserInputType.MouseButton1 then
                     dragging = false
@@ -1054,7 +1091,7 @@ ApeiroTab:CreateButton({
     end
 })
 
--- Full ESP (All-in-One)
+-- Full ESP
 ApeiroTab:CreateButton({
     Name = "🔮 Full ESP (All-in-One)",
     Callback = function()
@@ -1118,13 +1155,15 @@ ApeiroTab:CreateButton({
     end
 })
 
--- ==================== CLOSE MENU BUTTON ====================
+-- ========== CLOSE MENU BUTTON ==========
 local CloseSection = MainTab:CreateSection("🌙 Close")
 MainTab:CreateButton({
     Name = "✖️ Close Menu",
     Callback = function()
         Rayfield:Destroy()
+        if bgGui then bgGui:Destroy() end
+        if animConnection then animConnection:Disconnect() end
     end
 })
 
-print("✨ Space Hub Loaded! Fly safe, explorer.")
+print("✨ Space Hub Loaded with Animated Starfield!")
