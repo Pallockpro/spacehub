@@ -1,0 +1,1130 @@
+-- Safely load Rayfield
+local success, Rayfield = pcall(function()
+    return loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/main/source.lua'))()
+end)
+
+if not success or not Rayfield then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "Error",
+        Text = "Failed to load Rayfield. Check your internet.",
+        Duration = 5
+    })
+    return
+end
+
+-- Apply Space Theme (dark, neon accents, starry background)
+local function applySpaceTheme()
+    -- Wait for the Rayfield GUI to be created
+    local gui = game:GetService("CoreGui"):FindFirstChild("Rayfield")
+    if gui then
+        -- Set overall background to transparent so we can add our own
+        local mainFrame = gui:FindFirstChild("MainFrame")
+        if mainFrame then
+            mainFrame.BackgroundColor3 = Color3.fromRGB(8, 8, 20)
+            mainFrame.BackgroundTransparency = 0.15
+            mainFrame.BorderSizePixel = 0
+        end
+        
+        -- Add a starfield background (static image, no animation)
+        local starfield = Instance.new("ImageLabel")
+        starfield.Name = "StarfieldBG"
+        starfield.Image = "rbxassetid://135740367" -- space/starfield decal ID (light stars)
+        starfield.ImageColor3 = Color3.fromRGB(80, 100, 200)
+        starfield.ImageTransparency = 0.85
+        starfield.ScaleType = Enum.ScaleType.Crop
+        starfield.BackgroundTransparency = 1
+        starfield.Size = UDim2.new(1, 0, 1, 0)
+        starfield.Position = UDim2.new(0, 0, 0, 0)
+        starfield.ZIndex = 0
+        starfield.Parent = gui
+        
+        -- Move starfield behind the main interface
+        local mainFrame1 = gui:FindFirstChild("MainFrame")
+        if mainFrame1 then
+            mainFrame1.ZIndex = 2
+        end
+        for _, child in pairs(gui:GetChildren()) do
+            if child:IsA("Frame") and child ~= starfield then
+                child.ZIndex = 2
+            end
+        end
+        
+        -- Change accent colors (buttons, sliders, etc.)
+        local styleSheet = gui:FindFirstChild("StyleSheet")
+        if styleSheet then
+            -- We can't directly edit StyleSheet, but we can override colors via theme
+            -- Rayfield uses Color3 values from its theme; better to set custom theme on creation
+        end
+    end
+end
+
+-- Custom theme for Rayfield (space colors)
+local customTheme = {
+    SchemeColor = Color3.fromRGB(0, 200, 255),     -- neon cyan
+    Background = Color3.fromRGB(8, 8, 20),         -- deep space
+    Header = Color3.fromRGB(15, 15, 35),           -- dark purple
+    TextColor = Color3.fromRGB(220, 220, 255),     -- icy white
+    ElementColor = Color3.fromRGB(30, 30, 60),     -- dark indigo
+    Shadow = Color3.fromRGB(0, 0, 0)
+}
+
+-- Create the Rayfield Window with custom theme
+local Window = Rayfield:CreateWindow({
+    Name = "✨ Space Hub ✨",
+    LoadingTitle = "Warp Drive Engaging",
+    LoadingSubtitle = "Loading interstellar scripts...",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "SpaceHub",
+        FileName = "Settings"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "",
+        RememberJoins = true
+    },
+    KeySystem = false
+})
+
+-- Attempt to inject space background and colors
+pcall(applySpaceTheme)
+
+-- Optional: Add subtle star twinkle without performance hit (very limited)
+task.delay(2, function()
+    pcall(applySpaceTheme)
+end)
+
+-- ==================== MAIN TAB (SCRIPTS) ====================
+local MainTab = Window:CreateTab("🚀 Scripts", 4483362458)
+
+-- Fly Scripts Section
+local FlySection = MainTab:CreateSection("✈️ Fly Scripts")
+
+MainTab:CreateButton({
+    Name = "🕊️ Simple Fly Script",
+    Callback = function()
+        loadstring([[
+            local plr = game.Players.LocalPlayer
+            local char = plr.Character or plr.CharacterAdded:Wait()
+            local root = char:WaitForChild("HumanoidRootPart")
+            local flying = false
+            local speed = 50
+            
+            local UIS = game:GetService("UserInputService")
+            local RS = game:GetService("RunService")
+            
+            local bodyVel = Instance.new("BodyVelocity")
+            local bodyGyro = Instance.new("BodyGyro")
+            
+            local keys = {W=false,A=false,S=false,D=false,Space=false,Control=false}
+            
+            UIS.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.X then
+                    flying = not flying
+                    if flying then
+                        bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
+                        bodyGyro.MaxTorque = Vector3.new(1e5,1e5,1e5)
+                        bodyVel.Parent = root
+                        bodyGyro.Parent = root
+                        char.Humanoid.PlatformStand = true
+                    else
+                        bodyVel:Destroy()
+                        bodyGyro:Destroy()
+                        char.Humanoid.PlatformStand = false
+                    end
+                end
+                if input.KeyCode == Enum.KeyCode.W then keys.W = true end
+                if input.KeyCode == Enum.KeyCode.A then keys.A = true end
+                if input.KeyCode == Enum.KeyCode.S then keys.S = true end
+                if input.KeyCode == Enum.KeyCode.D then keys.D = true end
+                if input.KeyCode == Enum.KeyCode.Space then keys.Space = true end
+                if input.KeyCode == Enum.KeyCode.LeftControl then keys.Control = true end
+            end)
+            
+            UIS.InputEnded:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.W then keys.W = false end
+                if input.KeyCode == Enum.KeyCode.A then keys.A = false end
+                if input.KeyCode == Enum.KeyCode.S then keys.S = false end
+                if input.KeyCode == Enum.KeyCode.D then keys.D = false end
+                if input.KeyCode == Enum.KeyCode.Space then keys.Space = false end
+                if input.KeyCode == Enum.KeyCode.LeftControl then keys.Control = false end
+            end)
+            
+            RS.RenderStepped:Connect(function()
+                if flying then
+                    local move = Vector3.new(0,0,0)
+                    if keys.W then move = move + Vector3.new(0,0,-1) end
+                    if keys.S then move = move + Vector3.new(0,0,1) end
+                    if keys.A then move = move + Vector3.new(-1,0,0) end
+                    if keys.D then move = move + Vector3.new(1,0,0) end
+                    if keys.Space then move = move + Vector3.new(0,1,0) end
+                    if keys.Control then move = move + Vector3.new(0,-1,0) end
+                    
+                    local cam = workspace.CurrentCamera
+                    move = (cam.CFrame.RightVector * move.X + cam.CFrame.UpVector * move.Y + cam.CFrame.LookVector * move.Z) * speed
+                    bodyVel.Velocity = move
+                    bodyGyro.CFrame = cam.CFrame
+                end
+            end)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {Title="Fly", Text="Press X to toggle", Duration=3})
+        ]])()
+    end
+})
+
+MainTab:CreateButton({
+    Name = "🏎️ Car Fly",
+    Callback = function()
+        loadstring([[
+            local FlyKey = Enum.KeyCode.V
+            local SpeedKey = Enum.KeyCode.LeftControl
+            local SpeedKeyMultiplier = 2
+            local FlightSpeed = 80
+            local VerticalSpeed = 40
+            local FlightAcceleration = 8
+            local TurnSpeed = 6
+            
+            local UIS = game:GetService("UserInputService")
+            local SG = game:GetService("StarterGui")
+            local RS = game:GetService("RunService")
+            local Players = game:GetService("Players")
+            local User = Players.LocalPlayer
+            local Camera = workspace.CurrentCamera
+            local UserRootPart = nil
+            local Connection = nil
+            local CurrentVelocity = Vector3.zero
+            local BodyMover = nil
+            local RightClickHeld = false
+            
+            local function notify(text)
+                SG:SetCore("SendNotification", {Title="car fly", Text=text})
+            end
+            
+            local function setCharacter(c)
+                UserRootPart = c:WaitForChild("HumanoidRootPart")
+            end
+            User.CharacterAdded:Connect(setCharacter)
+            if User.Character then setCharacter(User.Character) end
+            
+            local function destroyMover()
+                if BodyMover then BodyMover:Destroy() BodyMover = nil end
+            end
+            
+            UIS.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton2 then RightClickHeld = true end
+            end)
+            UIS.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton2 then RightClickHeld = false end
+            end)
+            
+            local function Flight(delta)
+                if not UserRootPart then return end
+                local car = UserRootPart:GetRootPart()
+                if not car or car.Anchored then return end
+                
+                local horizontalDir = Vector3.zero
+                local verticalDir = 0
+                
+                if not UIS:GetFocusedTextBox() then
+                    local camLook = Camera.CFrame.LookVector
+                    local camRight = Camera.CFrame.RightVector
+                    local flatLook = Vector3.new(camLook.X, 0, camLook.Z)
+                    local flatRight = Vector3.new(camRight.X, 0, camRight.Z)
+                    if flatLook.Magnitude > 0.01 then flatLook = flatLook.Unit end
+                    if flatRight.Magnitude > 0.01 then flatRight = flatRight.Unit end
+                    
+                    local wHeld = UIS:IsKeyDown(Enum.KeyCode.W)
+                    if wHeld and RightClickHeld then
+                        horizontalDir = flatLook
+                    else
+                        if wHeld then horizontalDir = horizontalDir + flatLook end
+                        if UIS:IsKeyDown(Enum.KeyCode.S) then horizontalDir = horizontalDir - flatLook end
+                        if UIS:IsKeyDown(Enum.KeyCode.A) then horizontalDir = horizontalDir - flatRight end
+                        if UIS:IsKeyDown(Enum.KeyCode.D) then horizontalDir = horizontalDir + flatRight end
+                    end
+                    if UIS:IsKeyDown(Enum.KeyCode.E) then verticalDir = 1 end
+                    if UIS:IsKeyDown(Enum.KeyCode.Q) then verticalDir = -1 end
+                end
+                
+                local speed = FlightSpeed * (UIS:IsKeyDown(SpeedKey) and SpeedKeyMultiplier or 1)
+                local flatTarget = (horizontalDir.Magnitude > 0 and horizontalDir.Unit or Vector3.zero) * speed
+                local vertTarget = Vector3.new(0, verticalDir * VerticalSpeed, 0)
+                local target = flatTarget + vertTarget
+                
+                CurrentVelocity = CurrentVelocity:Lerp(target, math.clamp(delta * FlightAcceleration, 0, 1))
+                
+                if not BodyMover then
+                    BodyMover = Instance.new("BodyVelocity")
+                    BodyMover.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                    BodyMover.P = 8e3
+                    BodyMover.Parent = car
+                end
+                BodyMover.Velocity = CurrentVelocity
+            end
+            
+            UIS.InputBegan:Connect(function(input, gp)
+                if gp or input.KeyCode ~= FlyKey then return end
+                if Connection then
+                    Connection:Disconnect()
+                    Connection = nil
+                    destroyMover()
+                    notify("disabled")
+                else
+                    CurrentVelocity = Vector3.new(UserRootPart.AssemblyLinearVelocity.X, 0, UserRootPart.AssemblyLinearVelocity.Z)
+                    Connection = RS.Heartbeat:Connect(Flight)
+                    notify("enabled")
+                end
+            end)
+            
+            notify("car fly ready - press V")
+        ]])()
+    end
+})
+
+MainTab:CreateButton({
+    Name = "⚡ Car Speed",
+    Callback = function()
+        loadstring(game:HttpGet("https://rawscripts.net/raw/Emergency-Response:-Liberty-County-Car-Boost-Cheat-4590"))()
+    end
+})
+
+MainTab:CreateButton({
+    Name = "🌀 Fling Script",
+    Callback = function()
+        loadstring([[
+            local Player = game:GetService("Players").LocalPlayer
+            local Mouse = Player:GetMouse()
+            local ToggleKey = Enum.KeyCode.F
+            
+            local FlingEnabled = false
+            local FlingForce = 5000
+            
+            local function FlingTarget(target)
+                if target and target:IsA("BasePart") then
+                    local bodyVelocity = Instance.new("BodyVelocity")
+                    bodyVelocity.Velocity = (target.Position - Player.Character.HumanoidRootPart.Position).Unit * FlingForce
+                    bodyVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
+                    bodyVelocity.Parent = target
+                    game:GetService("Debris"):AddItem(bodyVelocity, 0.5)
+                end
+            end
+            
+            Mouse.KeyDown:Connect(function(key)
+                if key == ToggleKey.Value.Name:sub(1,1):lower() then
+                    FlingEnabled = not FlingEnabled
+                    if FlingEnabled then
+                        Player:GetMouse().Button1Down:Connect(function()
+                            if FlingEnabled then
+                                local target = Mouse.Target
+                                if target then
+                                    FlingTarget(target)
+                                end
+                            end
+                        end)
+                    end
+                end
+            end)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Fling Script Loaded",
+                Text = "Press " .. ToggleKey.Name .. " to toggle fling mode",
+                Duration = 5
+            })
+        ]])()
+    end
+})
+
+-- Speed Scripts Section
+local SpeedSection = MainTab:CreateSection("🏃 Speed Scripts")
+
+local speedEnabled = false
+local desiredSpeed = 50
+local speedConnection = nil
+
+local function applySpeed()
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.WalkSpeed = desiredSpeed
+    end
+end
+
+local function startSpeedPersistence()
+    if speedConnection then return end
+    speedConnection = game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+        char:WaitForChild("Humanoid")
+        applySpeed()
+    end)
+    applySpeed()
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title="Speed", Text="Speed will stay after respawn", Duration=2})
+end
+
+MainTab:CreateButton({
+    Name = "⚙️ Set Walk Speed (Persistent)",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local sg = Instance.new("ScreenGui")
+        local frame = Instance.new("Frame")
+        local textBox = Instance.new("TextBox")
+        local confirm = Instance.new("TextButton")
+        
+        sg.Parent = game:GetService("CoreGui")
+        frame.Size = UDim2.new(0,250,0,100)
+        frame.Position = UDim2.new(0.5,-125,0.5,-50)
+        frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        frame.BackgroundTransparency = 0.1
+        frame.Active = true
+        frame.Draggable = true
+        frame.Parent = sg
+        
+        textBox.Size = UDim2.new(0,200,0,30)
+        textBox.Position = UDim2.new(0,25,0,15)
+        textBox.PlaceholderText = "Speed (16-250)"
+        textBox.BackgroundColor3 = Color3.fromRGB(50,50,50)
+        textBox.TextColor3 = Color3.fromRGB(255,255,255)
+        textBox.Parent = frame
+        
+        confirm.Size = UDim2.new(0,200,0,30)
+        confirm.Position = UDim2.new(0,25,0,55)
+        confirm.Text = "Apply & Persist"
+        confirm.BackgroundColor3 = Color3.fromRGB(0,150,255)
+        confirm.TextColor3 = Color3.fromRGB(255,255,255)
+        confirm.Parent = frame
+        
+        confirm.MouseButton1Click:Connect(function()
+            local spd = tonumber(textBox.Text)
+            if spd and spd >= 16 and spd <= 250 then
+                desiredSpeed = spd
+                startSpeedPersistence()
+                applySpeed()
+                sg:Destroy()
+            else
+                game:GetService("StarterGui"):SetCore("SendNotification", {Title="Error", Text="Invalid speed (16-250)", Duration=2})
+            end
+        end)
+    end
+})
+
+-- Persistent Infinite Jump
+local infJumpEnabled = false
+local infJumpConnection = nil
+
+local function setupInfiniteJump()
+    local player = game.Players.LocalPlayer
+    local function onJumpRequest()
+        if infJumpEnabled then
+            local char = player.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+    game:GetService("UserInputService").JumpRequest:Connect(onJumpRequest)
+end
+
+local function startInfJumpPersistence()
+    if infJumpConnection then return end
+    infJumpEnabled = true
+    setupInfiniteJump()
+    infJumpConnection = game.Players.LocalPlayer.CharacterAdded:Connect(function()
+        -- No action needed, the JumpRequest connection persists
+    end)
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title="Infinite Jump", Text="Enabled (Press J to toggle)", Duration=2})
+end
+
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.J then
+        infJumpEnabled = not infJumpEnabled
+        local status = infJumpEnabled and "ON" or "OFF"
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title="Infinite Jump", Text=status, Duration=1})
+    end
+end)
+
+MainTab:CreateButton({
+    Name = "🦘 Enable Infinite Jump (Persistent)",
+    Callback = function()
+        startInfJumpPersistence()
+    end
+})
+
+-- Persistent Noclip
+local noclipEnabled = false
+local noclipConnection = nil
+local noclipStepped = nil
+
+local function applyNoclip(char)
+    if noclipEnabled and char then
+        for _, part in pairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+end
+
+local function startNoclipPersistence()
+    if noclipConnection then return end
+    noclipEnabled = true
+    local player = game.Players.LocalPlayer
+    
+    if player.Character then applyNoclip(player.Character) end
+    
+    noclipConnection = player.CharacterAdded:Connect(function(char)
+        char:WaitForChild("HumanoidRootPart")
+        applyNoclip(char)
+    end)
+    
+    noclipStepped = game:GetService("RunService").Stepped:Connect(function()
+        if noclipEnabled and player.Character then
+            applyNoclip(player.Character)
+        end
+    end)
+    
+    game:GetService("StarterGui"):SetCore("SendNotification", {Title="Noclip", Text="Enabled (Press N to toggle)", Duration=2})
+end
+
+game:GetService("UserInputService").InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.N then
+        noclipEnabled = not noclipEnabled
+        local player = game.Players.LocalPlayer
+        if noclipEnabled then
+            if player.Character then applyNoclip(player.Character) end
+        else
+            if player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+        local status = noclipEnabled and "ON" or "OFF"
+        game:GetService("StarterGui"):SetCore("SendNotification", {Title="Noclip", Text=status, Duration=1})
+    end
+end)
+
+MainTab:CreateButton({
+    Name = "👻 Enable Noclip (Persistent)",
+    Callback = function()
+        startNoclipPersistence()
+    end
+})
+
+-- Utility Scripts Section
+local UtilitySection = MainTab:CreateSection("🛠️ Other Scripts")
+
+MainTab:CreateButton({
+    Name = "📍 Click Teleport",
+    Callback = function()
+        loadstring([[
+            local plr = game.Players.LocalPlayer
+            local char = plr.Character or plr.CharacterAdded:Wait()
+            local root = char:WaitForChild("HumanoidRootPart")
+            local mouse = plr:GetMouse()
+            
+            game:GetService("UserInputService").InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.T then
+                    local target = mouse.Hit
+                    if target then root.CFrame = CFrame.new(target.Position) end
+                end
+            end)
+            game:GetService("StarterGui"):SetCore("SendNotification", {Title="Teleport", Text="Press T to teleport to mouse", Duration=3})
+        ]])()
+    end
+})
+
+MainTab:CreateButton({
+    Name = "👁️ Simple ESP",
+    Callback = function()
+        loadstring([[
+            local players = game:GetService("Players")
+            local localPlayer = players.LocalPlayer
+            local espObjects = {}
+            
+            local function createESP(player)
+                if player == localPlayer then return end
+                local char = player.Character
+                if not char then return end
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if not root then return end
+                
+                local billboard = Instance.new("BillboardGui")
+                billboard.Size = UDim2.new(0,200,0,50)
+                billboard.StudsOffset = Vector3.new(0,3,0)
+                billboard.AlwaysOnTop = true
+                billboard.Parent = root
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,0,1,0)
+                label.BackgroundTransparency = 1
+                label.TextColor3 = Color3.fromRGB(255,255,255)
+                label.Text = player.Name
+                label.TextScaled = true
+                label.Parent = billboard
+                
+                local highlight = Instance.new("Highlight")
+                highlight.FillColor = Color3.fromRGB(255,0,0)
+                highlight.FillTransparency = 0.5
+                highlight.Parent = char
+                
+                espObjects[player] = {billboard=billboard, highlight=highlight}
+            end
+            
+            local function removeESP(player)
+                if espObjects[player] then
+                    espObjects[player].billboard:Destroy()
+                    espObjects[player].highlight:Destroy()
+                    espObjects[player] = nil
+                end
+            end
+            
+            for _, player in pairs(players:GetPlayers()) do createESP(player) end
+            players.PlayerAdded:Connect(createESP)
+            players.PlayerRemoving:Connect(removeESP)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {Title="ESP", Text="Players are now highlighted", Duration=3})
+        ]])()
+    end
+})
+
+-- ==================== APEIROPHOBIA TAB ====================
+local ApeiroTab = Window:CreateTab("🌌 Apeirophobia", 4483362463)
+local ApeiroSection = ApeiroTab:CreateSection("Backrooms Helpers")
+
+-- Infinite Stamina Script
+ApeiroTab:CreateButton({
+    Name = "🏃 Infinite Stamina",
+    Callback = function()
+        loadstring([[
+            local player = game.Players.LocalPlayer
+            local character = player.Character
+            if not character then
+                player.CharacterAdded:Wait()
+                character = player.Character
+            end
+            
+            local Stami = true
+            
+            local function InfiniteStamina()
+                game:GetService("RunService").Heartbeat:Connect(function()
+                    if Stami and character and character:FindFirstChild("Humanoid") then
+                        local Stamina = character:FindFirstChild("Stamina")
+                        if Stamina then
+                            if Stamina.Value < 100 then
+                                Stamina.Value = 100
+                            end
+                        end
+                    end
+                end)
+            end
+            
+            local function SetupStamina()
+                character = player.Character or player.CharacterAdded:Wait()
+                local Stamina = character:FindFirstChild("Stamina")
+                if not Stamina then
+                    Stamina = Instance.new("NumberValue")
+                    Stamina.Name = "Stamina"
+                    Stamina.Value = 100
+                    Stamina.Parent = character
+                end
+                InfiniteStamina()
+            end
+            
+            SetupStamina()
+            player.CharacterAdded:Connect(SetupStamina)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Infinite Stamina",
+                Text = "Your stamina will never run out!",
+                Duration = 3
+            })
+        ]])()
+    end
+})
+
+-- Item ESP + Exit Finder
+ApeiroTab:CreateButton({
+    Name = "🔍 Item ESP + Exit Finder",
+    Callback = function()
+        loadstring([[
+            local player = game.Players.LocalPlayer
+            local RunService = game:GetService("RunService")
+            local HighlightColor = Color3.fromRGB(0, 255, 0)
+            
+            local function AddESPToImportantObjects()
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        local isImportant = false
+                        
+                        if obj.Name and string.find(obj.Name:lower(), "key") then
+                            isImportant = true
+                        elseif obj.Name and string.find(obj.Name:lower(), "item") then
+                            isImportant = true
+                        elseif obj.Name and string.find(obj.Name:lower(), "token") then
+                            isImportant = true
+                        elseif obj.Name and string.find(obj.Name:lower(), "lever") then
+                            isImportant = true
+                        elseif obj.Name and string.find(obj.Name:lower(), "exit") then
+                            isImportant = true
+                        elseif obj.Name and string.find(obj.Name:lower(), "door") then
+                            isImportant = true
+                        elseif obj.Name and string.find(obj.Name:lower(), "camera") then
+                            isImportant = true
+                        elseif obj.BrickColor and (obj.BrickColor.Name == "Bright red" or obj.BrickColor.Name == "Bright green") then
+                            isImportant = true
+                        end
+                        
+                        if isImportant then
+                            local highlight = obj:FindFirstChild("ItemESP")
+                            if not highlight then
+                                highlight = Instance.new("Highlight")
+                                highlight.Name = "ItemESP"
+                                highlight.FillColor = HighlightColor
+                                highlight.FillTransparency = 0.5
+                                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                                highlight.Parent = obj
+                            end
+                            
+                            local billboard = obj:FindFirstChild("ItemLabel")
+                            if not billboard then
+                                billboard = Instance.new("BillboardGui")
+                                billboard.Name = "ItemLabel"
+                                billboard.Size = UDim2.new(0, 100, 0, 30)
+                                billboard.StudsOffset = Vector3.new(0, 2, 0)
+                                billboard.AlwaysOnTop = true
+                                billboard.Parent = obj
+                                
+                                local label = Instance.new("TextLabel")
+                                label.Size = UDim2.new(1, 0, 1, 0)
+                                label.BackgroundTransparency = 1
+                                label.TextColor3 = Color3.fromRGB(255, 255, 255)
+                                label.TextStrokeTransparency = 0.3
+                                label.Text = obj.Name
+                                label.TextScaled = true
+                                label.Parent = billboard
+                            end
+                        end
+                    end
+                end
+            end
+            
+            RunService.RenderStepped:Connect(AddESPToImportantObjects)
+            workspace.DescendantAdded:Connect(AddESPToImportantObjects)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "ESP Active",
+                Text = "Important items and exits are now highlighted!",
+                Duration = 3
+            })
+        ]])()
+    end
+})
+
+-- Exit ESP (Specifically for the exit door)
+ApeiroTab:CreateButton({
+    Name = "🚪 Exit ESP (Find the Exit)",
+    Callback = function()
+        loadstring([[
+            local player = game.Players.LocalPlayer
+            local RunService = game:GetService("RunService")
+            
+            local function FindAndHighlightExit()
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and obj.Name and (string.find(obj.Name:lower(), "exit") or string.find(obj.Name:lower(), "door")) then
+                        local highlight = obj:FindFirstChild("ExitESP")
+                        if not highlight then
+                            highlight = Instance.new("Highlight")
+                            highlight.Name = "ExitESP"
+                            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                            highlight.FillTransparency = 0.3
+                            highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                            highlight.Parent = obj
+                        end
+                        
+                        local billboard = obj:FindFirstChild("ExitLabel")
+                        if not billboard then
+                            billboard = Instance.new("BillboardGui")
+                            billboard.Name = "ExitLabel"
+                            billboard.Size = UDim2.new(0, 150, 0, 40)
+                            billboard.StudsOffset = Vector3.new(0, 3, 0)
+                            billboard.AlwaysOnTop = true
+                            billboard.Parent = obj
+                            
+                            local label = Instance.new("TextLabel")
+                            label.Size = UDim2.new(1, 0, 1, 0)
+                            label.BackgroundTransparency = 1
+                            label.TextColor3 = Color3.fromRGB(255, 0, 0)
+                            label.TextStrokeTransparency = 0.2
+                            label.Text = "🚪 EXIT 🚪"
+                            label.TextScaled = true
+                            label.Parent = billboard
+                        end
+                    end
+                end
+            end
+            
+            RunService.RenderStepped:Connect(FindAndHighlightExit)
+            workspace.DescendantAdded:Connect(FindAndHighlightExit)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Exit ESP",
+                Text = "The exit is now highlighted in RED!",
+                Duration = 3
+            })
+        ]])()
+    end
+})
+
+-- X-Ray Vision (See Through Walls)
+ApeiroTab:CreateButton({
+    Name = "🩻 X-Ray Vision (See Through Walls)",
+    Callback = function()
+        loadstring([[
+            local function XRay()
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and obj.Transparency < 0.9 and not obj:FindFirstChild("IsCharacter") then
+                        local isCharacterPart = false
+                        local player = game.Players.LocalPlayer
+                        if player.Character and obj:IsDescendantOf(player.Character) then
+                            isCharacterPart = true
+                        end
+                        
+                        if not isCharacterPart then
+                            obj.Transparency = 0.7
+                            obj.CanCollide = false
+                        end
+                    end
+                end
+            end
+            
+            game:GetService("RunService").RenderStepped:Connect(XRay)
+            
+            workspace.DescendantAdded:Connect(function(desc)
+                if desc:IsA("BasePart") and desc.Transparency < 0.9 then
+                    local player = game.Players.LocalPlayer
+                    if player.Character and desc:IsDescendantOf(player.Character) then
+                        return
+                    end
+                    desc.Transparency = 0.7
+                    desc.CanCollide = false
+                end
+            end)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "X-Ray Active",
+                Text = "You can now see through walls!",
+                Duration = 3
+            })
+        ]])()
+    end
+})
+
+-- Remove Fog & Darkness
+ApeiroTab:CreateButton({
+    Name = "💨 Remove Fog & Darkness",
+    Callback = function()
+        loadstring([[
+            local Lighting = game:GetService("Lighting")
+            
+            Lighting.FogEnd = 100000
+            Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+            Lighting.Brightness = 2
+            Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+            Lighting.GlobalShadows = false
+            
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("Atmosphere") or obj:IsA("FogEffect") then
+                    obj:Destroy()
+                end
+            end
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Fog Removed",
+                Text = "The darkness has been lifted!",
+                Duration = 3
+            })
+        ]])()
+    end
+})
+
+-- Auto Clicker (Spam Click)
+ApeiroTab:CreateButton({
+    Name = "🖱️ Auto Clicker (Spam Click)",
+    Callback = function()
+        loadstring([[
+            local UserInputService = game:GetService("UserInputService")
+            local clicking = false
+            local clickConnection = nil
+            
+            local function startClicking()
+                if clickConnection then return end
+                clickConnection = game:GetService("RunService").RenderStepped:Connect(function()
+                    if clicking then
+                        local mouse = game.Players.LocalPlayer:GetMouse()
+                        mouse1press()
+                        wait(0.05)
+                        mouse1release()
+                    end
+                end)
+            end
+            
+            local function stopClicking()
+                if clickConnection then
+                    clickConnection:Disconnect()
+                    clickConnection = nil
+                end
+            end
+            
+            UserInputService.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.C then
+                    clicking = not clicking
+                    if clicking then
+                        startClicking()
+                        game:GetService("StarterGui"):SetCore("SendNotification", {Title="Auto Clicker", Text="ON (C to toggle)", Duration=1})
+                    else
+                        stopClicking()
+                        game:GetService("StarterGui"):SetCore("SendNotification", {Title="Auto Clicker", Text="OFF (C to toggle)", Duration=1})
+                    end
+                end
+            end)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Auto Clicker",
+                Text = "Press C to toggle auto-clicking",
+                Duration = 3
+            })
+        ]])()
+    end
+})
+
+-- Speed Boost (Safe)
+ApeiroTab:CreateButton({
+    Name = "⚡ Speed Boost (Safe)",
+    Callback = function()
+        loadstring([[
+            local player = game.Players.LocalPlayer
+            local char = player.Character or player.CharacterAdded:Wait()
+            local hum = char:WaitForChild("Humanoid")
+            
+            local speedGui = Instance.new("ScreenGui")
+            local speedFrame = Instance.new("Frame")
+            local speedSlider = Instance.new("Frame")
+            local currentSpeedLabel = Instance.new("TextLabel")
+            local speedValueLabel = Instance.new("TextLabel")
+            
+            speedGui.Parent = game:GetService("CoreGui")
+            speedFrame.Size = UDim2.new(0, 200, 0, 80)
+            speedFrame.Position = UDim2.new(1, -210, 0, 10)
+            speedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            speedFrame.BackgroundTransparency = 0.1
+            speedFrame.Active = true
+            speedFrame.Draggable = true
+            speedFrame.Parent = speedGui
+            
+            currentSpeedLabel.Size = UDim2.new(1, 0, 0, 30)
+            currentSpeedLabel.Text = "Speed Boost: OFF"
+            currentSpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            currentSpeedLabel.BackgroundTransparency = 1
+            currentSpeedLabel.Parent = speedFrame
+            
+            local speed = 16
+            local speedEnabled = false
+            
+            local speedSliderBg = Instance.new("Frame")
+            speedSliderBg.Size = UDim2.new(0, 180, 0, 4)
+            speedSliderBg.Position = UDim2.new(0, 10, 0, 50)
+            speedSliderBg.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            speedSliderBg.Parent = speedFrame
+            
+            local speedBar = Instance.new("Frame")
+            speedBar.Size = UDim2.new(0.5, 0, 1, 0)
+            speedBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            speedBar.Parent = speedSliderBg
+            
+            local speedHandle = Instance.new("TextButton")
+            speedHandle.Size = UDim2.new(0, 10, 0, 10)
+            speedHandle.Position = UDim2.new(0.5, -5, 0, -3)
+            speedHandle.Text = ""
+            speedHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            speedHandle.Parent = speedBar
+            
+            local speedValueLabel = Instance.new("TextLabel")
+            speedValueLabel.Size = UDim2.new(1, 0, 0, 20)
+            speedValueLabel.Position = UDim2.new(0, 0, 0, 60)
+            speedValueLabel.Text = "Speed: 16"
+            speedValueLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+            speedValueLabel.BackgroundTransparency = 1
+            speedValueLabel.Parent = speedFrame
+            
+            local dragging = false
+            speedHandle.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = true
+                end
+            end)
+            
+            speedHandle.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    dragging = false
+                end
+            end)
+            
+            game:GetService("UserInputService").InputChanged:Connect(function(input)
+                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                    local mousePos = input.Position.X
+                    local sliderPos = speedSliderBg.AbsolutePosition.X
+                    local newPos = (mousePos - sliderPos) / speedSliderBg.AbsoluteSize.X
+                    newPos = math.clamp(newPos, 0, 1)
+                    speedBar.Size = UDim2.new(newPos, 0, 1, 0)
+                    speedHandle.Position = UDim2.new(newPos, -5, 0, -3)
+                    speed = math.floor(16 + (newPos * 84))
+                    speedValueLabel.Text = "Speed: " .. speed
+                    if speedEnabled then
+                        hum.WalkSpeed = speed
+                    end
+                end
+            end)
+            
+            speedFrame.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    speedEnabled = not speedEnabled
+                    if speedEnabled then
+                        hum.WalkSpeed = speed
+                        currentSpeedLabel.Text = "Speed Boost: ON"
+                        currentSpeedLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+                    else
+                        hum.WalkSpeed = 16
+                        currentSpeedLabel.Text = "Speed Boost: OFF"
+                        currentSpeedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    end
+                end
+            end)
+            
+            game.Players.LocalPlayer.CharacterAdded:Connect(function(newChar)
+                wait(0.5)
+                hum = newChar:WaitForChild("Humanoid")
+                if speedEnabled then
+                    hum.WalkSpeed = speed
+                end
+            end)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Speed Boost",
+                Text = "Click the GUI to toggle speed boost",
+                Duration = 3
+            })
+        ]])()
+    end
+})
+
+-- Teleport to Exit
+ApeiroTab:CreateButton({
+    Name = "🌀 Teleport to Exit",
+    Callback = function()
+        loadstring([[
+            local player = game.Players.LocalPlayer
+            local char = player.Character
+            if not char then return end
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if not root then return end
+            
+            local exitPart = nil
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and obj.Name and (string.find(obj.Name:lower(), "exit") or string.find(obj.Name:lower(), "door")) then
+                    exitPart = obj
+                    break
+                end
+            end
+            
+            if exitPart then
+                root.CFrame = CFrame.new(exitPart.Position)
+                game:GetService("StarterGui"):SetCore("SendNotification", {
+                    Title = "Teleported",
+                    Text = "You have been teleported to the exit!",
+                    Duration = 2
+                })
+            else
+                game:GetService("StarterGui"):SetCore("SendNotification", {
+                    Title = "Error",
+                    Text = "Could not find the exit!",
+                    Duration = 2
+                })
+            end
+        ]])()
+    end
+})
+
+-- Full ESP (All-in-One)
+ApeiroTab:CreateButton({
+    Name = "🔮 Full ESP (All-in-One)",
+    Callback = function()
+        loadstring([[
+            local RunService = game:GetService("RunService")
+            
+            local function AddESP(obj, color, text)
+                local highlight = obj:FindFirstChild("FullESP")
+                if not highlight then
+                    highlight = Instance.new("Highlight")
+                    highlight.Name = "FullESP"
+                    highlight.FillColor = color
+                    highlight.FillTransparency = 0.4
+                    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    highlight.Parent = obj
+                end
+                
+                local billboard = obj:FindFirstChild("ESPLabel")
+                if not billboard then
+                    billboard = Instance.new("BillboardGui")
+                    billboard.Name = "ESPLabel"
+                    billboard.Size = UDim2.new(0, 150, 0, 40)
+                    billboard.StudsOffset = Vector3.new(0, 3, 0)
+                    billboard.AlwaysOnTop = true
+                    billboard.Parent = obj
+                    
+                    local label = Instance.new("TextLabel")
+                    label.Size = UDim2.new(1, 0, 1, 0)
+                    label.BackgroundTransparency = 1
+                    label.TextColor3 = Color3.fromRGB(255, 255, 0)
+                    label.TextStrokeTransparency = 0.2
+                    label.Text = text
+                    label.TextScaled = true
+                    label.Parent = billboard
+                end
+            end
+            
+            local function ScanForObjects()
+                for _, obj in pairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        if obj.Name and (string.find(obj.Name:lower(), "entity") or string.find(obj.Name:lower(), "monster") or string.find(obj.Name:lower(), "enemy")) then
+                            AddESP(obj, Color3.fromRGB(255, 0, 0), "💀 ENTITY 💀")
+                        elseif obj.Name and (string.find(obj.Name:lower(), "key") or string.find(obj.Name:lower(), "item") or string.find(obj.Name:lower(), "token")) then
+                            AddESP(obj, Color3.fromRGB(0, 255, 0), "🔑 " .. obj.Name)
+                        elseif obj.Name and (string.find(obj.Name:lower(), "exit") or string.find(obj.Name:lower(), "door")) then
+                            AddESP(obj, Color3.fromRGB(255, 0, 255), "🚪 EXIT")
+                        end
+                    end
+                end
+            end
+            
+            RunService.RenderStepped:Connect(ScanForObjects)
+            workspace.DescendantAdded:Connect(ScanForObjects)
+            
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Full ESP",
+                Text = "Entities, items, and exit are now highlighted!",
+                Duration = 3
+            })
+        ]])()
+    end
+})
+
+-- ==================== CLOSE MENU BUTTON ====================
+local CloseSection = MainTab:CreateSection("🌙 Close")
+MainTab:CreateButton({
+    Name = "✖️ Close Menu",
+    Callback = function()
+        Rayfield:Destroy()
+    end
+})
+
+print("✨ Space Hub Loaded! Fly safe, explorer.")
