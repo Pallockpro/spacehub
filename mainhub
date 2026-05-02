@@ -1,4 +1,4 @@
---[ Space Hub - Fully Fixed | Smooth UI, Working Toggles, Draggable Popups ]--
+--[ Space Hub - Transparent Buttons, Starfield Visible Through All Controls ]--
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -71,7 +71,6 @@ local function setInfiniteJump(state)
     if infJumpToggleBtn then
         local text = infJumpToggleBtn.Text:gsub(" ✓", "")
         infJumpToggleBtn.Text = text .. (infJumpEnabled and " ✓" or "")
-        infJumpToggleBtn.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 130, 100) or Color3.fromRGB(30, 30, 55)
     end
 end
 
@@ -102,7 +101,6 @@ local function startNoclip()
     if noclipToggleBtn then
         local text = noclipToggleBtn.Text:gsub(" ✓", "")
         noclipToggleBtn.Text = text .. " ✓"
-        noclipToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 130, 100)
     end
 end
 
@@ -120,7 +118,6 @@ local function stopNoclip()
     if noclipToggleBtn then
         local text = noclipToggleBtn.Text:gsub(" ✓", "")
         noclipToggleBtn.Text = text
-        noclipToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
     end
 end
 
@@ -148,7 +145,7 @@ local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 500, 0, 600)
 mainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
-mainFrame.BackgroundTransparency = 0.05
+mainFrame.BackgroundTransparency = 0.3  -- more transparent to let stars shine
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
@@ -167,7 +164,7 @@ border.Parent = mainFrame
 local bgContainer = Instance.new("Frame")
 bgContainer.Size = UDim2.new(1, 0, 1, 0)
 bgContainer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-bgContainer.BackgroundTransparency = 0.3
+bgContainer.BackgroundTransparency = 0.2
 bgContainer.Parent = mainFrame
 
 local stars = {}
@@ -198,7 +195,7 @@ end)
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 40)
 titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 45)
-titleBar.BackgroundTransparency = 0.15
+titleBar.BackgroundTransparency = 0.3
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 local titleCorner = Instance.new("UICorner")
@@ -222,6 +219,7 @@ closeBtn.Position = UDim2.new(1, -40, 0, 0)
 closeBtn.Text = "✖"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+closeBtn.BackgroundTransparency = 0.2
 closeBtn.BorderSizePixel = 0
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 18
@@ -259,7 +257,7 @@ local function createTabButton(name, activeColor, inactiveColor, callback)
     btn.Position = UDim2.new(0, 2, 0, 2)
     btn.Text = name
     btn.BackgroundColor3 = inactiveColor
-    btn.BackgroundTransparency = 0.2
+    btn.BackgroundTransparency = 0.4
     btn.TextColor3 = Color3.fromRGB(220, 220, 255)
     btn.Font = Enum.Font.GothamSemibold
     btn.TextSize = 15
@@ -304,13 +302,12 @@ local scriptsPanel = createContentPanel()
 local apeiroPanel = createContentPanel()
 apeiroPanel.Visible = false
 
--- ========== STYLED BUTTON CREATION ==========
-local function addButton(panel, text, callback, color)
+-- ========== TRANSPARENT BUTTONS (Only Text + Glow) ==========
+local function addButton(panel, text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 38)
     btn.Text = text
-    btn.BackgroundColor3 = color or Color3.fromRGB(30, 30, 55)
-    btn.BackgroundTransparency = 0.2
+    btn.BackgroundTransparency = 1          -- <-- fully transparent
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 14
@@ -321,6 +318,7 @@ local function addButton(panel, text, callback, color)
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = btn
     
+    -- Glowing border only (no background fill)
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = 1.5
     stroke.Color = Color3.fromRGB(0, 200, 255)
@@ -331,10 +329,11 @@ local function addButton(panel, text, callback, color)
     
     btn.MouseButton1Click:Connect(function()
         safeExecute(callback, text)
-        local originalColor = btn.BackgroundColor3
-        btn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+        -- flash effect on border
+        local originalColor = stroke.Color
+        stroke.Color = Color3.fromRGB(0, 255, 255)
         task.wait(0.1)
-        btn.BackgroundColor3 = originalColor
+        stroke.Color = originalColor
     end)
     return btn
 end
@@ -343,8 +342,7 @@ local function addToggleButton(panel, text, initialState, onToggle)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 38)
     btn.Text = text .. (initialState and " ✓" or "")
-    btn.BackgroundColor3 = initialState and Color3.fromRGB(0, 130, 100) or Color3.fromRGB(30, 30, 55)
-    btn.BackgroundTransparency = 0.2
+    btn.BackgroundTransparency = 1
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 14
@@ -365,13 +363,17 @@ local function addToggleButton(panel, text, initialState, onToggle)
     
     local function updateUI(state)
         btn.Text = text .. (state and " ✓" or "")
-        btn.BackgroundColor3 = state and Color3.fromRGB(0, 130, 100) or Color3.fromRGB(30, 30, 55)
     end
     
     btn.MouseButton1Click:Connect(function()
         local newState = not (btn.Text:find("✓"))
         updateUI(newState)
         safeExecute(function() onToggle(newState) end, text)
+        -- flash effect
+        local originalColor = stroke.Color
+        stroke.Color = Color3.fromRGB(0, 255, 255)
+        task.wait(0.1)
+        stroke.Color = originalColor
     end)
     return btn
 end
@@ -576,8 +578,8 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     frame.Size = UDim2.new(0, 260, 0, 130)
     frame.Position = UDim2.new(0.5, -130, 0.5, -65)
     frame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
+    frame.BackgroundTransparency = 0.2
     frame.BorderSizePixel = 0
-    frame.BackgroundTransparency = 0.1
     frame.Parent = screenGui
     
     local frameCorner = Instance.new("UICorner")
@@ -588,7 +590,7 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     local dragBar = Instance.new("Frame")
     dragBar.Size = UDim2.new(1, 0, 0, 30)
     dragBar.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
-    dragBar.BackgroundTransparency = 0.3
+    dragBar.BackgroundTransparency = 0.2
     dragBar.BorderSizePixel = 0
     dragBar.Parent = frame
     local dragCorner = Instance.new("UICorner")
@@ -605,7 +607,6 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     dragLabel.BackgroundTransparency = 1
     dragLabel.Parent = dragBar
     
-    -- Make frame draggable using the bar
     local dragStart, dragStartPos
     local draggingPopup = false
     dragBar.InputBegan:Connect(function(input)
@@ -663,13 +664,13 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     end)
 end)
 
--- Infinite Jump toggle (store reference)
+-- Infinite Jump toggle
 local infJumpBtn = addToggleButton(scriptsPanel, "🦘 Infinite Jump (J to toggle)", infJumpEnabled, function(state)
     setInfiniteJump(state)
 end)
 infJumpToggleBtn = infJumpBtn
 
--- Noclip toggle (store reference)
+-- Noclip toggle
 local noclipBtn = addToggleButton(scriptsPanel, "👻 Noclip (N to toggle)", noclipEnabled, function(state)
     if state then startNoclip() else stopNoclip() end
 end)
@@ -1036,4 +1037,4 @@ end)
 scriptsPanel.Visible = true
 apeiroPanel.Visible = false
 
-print("✨ Space Hub fully fixed – Enjoy!")
+print("✨ Space Hub - Transparent buttons, starfield fully visible")
