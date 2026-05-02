@@ -1,6 +1,4 @@
---[ Space Hub - Modern Custom GUI with In‑Window Animated Background ]--
--- Fixed: Background inside window, all buttons visible, smooth corners.
-
+--[ Space Hub - Modern GUI with Animated Buttons + Error Debug ]--
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -8,14 +6,25 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local Lighting = game:GetService("Lighting")
-
 local player = Players.LocalPlayer
+
+-- ========== GLOBAL DEBUG ERROR HANDLER ==========
+local function safeExecute(callback, buttonName)
+    local success, err = pcall(callback)
+    if not success then
+        warn("[SpaceHub] Error in button '" .. tostring(buttonName) .. "': " .. tostring(err))
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "Script Error",
+            Text = "Check console (F9) for details",
+            Duration = 3
+        })
+    end
+end
 
 -- ========== PERSISTENT STATES ==========
 local walkSpeedEnabled = false
 local walkSpeedValue = 50
 local speedPersistConnection = nil
-
 local infJumpEnabled = false
 local noclipEnabled = false
 local noclipStepped = nil
@@ -53,9 +62,7 @@ end
 local function applyNoclip(char)
     if noclipEnabled and char then
         for _, part in pairs(char:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
+            if part:IsA("BasePart") then part.CanCollide = false end
         end
     end
 end
@@ -69,9 +76,7 @@ local function startNoclip()
         applyNoclip(char)
     end)
     noclipStepped = RunService.Stepped:Connect(function()
-        if noclipEnabled and player.Character then
-            applyNoclip(player.Character)
-        end
+        if noclipEnabled and player.Character then applyNoclip(player.Character) end
     end)
 end
 
@@ -81,19 +86,16 @@ local function stopNoclip()
     if noclipStepped then noclipStepped:Disconnect() noclipStepped = nil end
     if player.Character then
         for _, part in pairs(player.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true
-            end
+            if part:IsA("BasePart") then part.CanCollide = true end
         end
     end
 end
 
--- Toggle keys (J for infinite jump, N for noclip)
+-- Toggle keys (J / N)
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.J then
         infJumpEnabled = not infJumpEnabled
         if infJumpEnabled then enableInfiniteJump() end
-        -- Notification via UI later
     elseif input.KeyCode == Enum.KeyCode.N then
         if noclipEnabled then stopNoclip() else startNoclip() end
     end
@@ -106,7 +108,6 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.ResetOnSpawn = false
 screenGui.Parent = CoreGui
 
--- Main window (dark, rounded, shadow)
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 500, 0, 600)
 mainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
@@ -116,25 +117,23 @@ mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
--- Rounded corners + subtle border
+-- Rounded corners + border
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = mainFrame
-
 local border = Instance.new("UIStroke")
 border.Thickness = 1
 border.Color = Color3.fromRGB(0, 200, 255)
 border.Transparency = 0.7
 border.Parent = mainFrame
 
--- ========== IN‑WINDOW ANIMATED STAR BACKGROUND ==========
+-- ========== IN‑WINDOW ANIMATED STARFIELD ==========
 local bgContainer = Instance.new("Frame")
 bgContainer.Size = UDim2.new(1, 0, 1, 0)
 bgContainer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 bgContainer.BackgroundTransparency = 0.3
 bgContainer.Parent = mainFrame
 
--- Star particles (only inside the window)
 local stars = {}
 for i = 1, 120 do
     local star = Instance.new("Frame")
@@ -148,7 +147,6 @@ for i = 1, 120 do
     table.insert(stars, star)
 end
 
--- Animate stars: drift right, wrap around, twinkle
 RunService.RenderStepped:Connect(function(dt)
     for _, star in ipairs(stars) do
         local newX = star.Position.X.Scale + dt * 0.03
@@ -167,11 +165,9 @@ titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 45)
 titleBar.BackgroundTransparency = 0.15
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
-
 local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 12)
 titleCorner.Parent = titleBar
--- Only top corners rounded (optional, but fine)
 
 local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(1, -50, 1, 0)
@@ -194,11 +190,9 @@ closeBtn.BorderSizePixel = 0
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 18
 closeBtn.Parent = titleBar
-closeBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-end)
+closeBtn.MouseButton1Click:Connect(function() screenGui:Destroy() end)
 
--- Make window draggable
+-- Dragging logic
 local dragging = false
 local dragStart, startPos
 titleBar.InputBegan:Connect(function(input)
@@ -208,11 +202,7 @@ titleBar.InputBegan:Connect(function(input)
         startPos = mainFrame.Position
     end
 end)
-titleBar.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = false
-    end
-end)
+titleBar.InputEnded:Connect(function() dragging = false end)
 UserInputService.InputChanged:Connect(function(input)
     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
         local delta = input.Position - dragStart
@@ -251,7 +241,7 @@ local apeiroBtn = createTabButton("🌌 APEIROPHOBIA", Color3.fromRGB(0, 150, 20
 scriptsBtn.Position = UDim2.new(0, 2, 0, 2)
 apeiroBtn.Position = UDim2.new(0.5, 2, 0, 2)
 
--- ========== SCROLLING PANELS (Content) ==========
+-- ========== CONTENT PANELS ==========
 local function createContentPanel()
     local panel = Instance.new("ScrollingFrame")
     panel.Size = UDim2.new(1, -20, 1, -95)
@@ -260,20 +250,17 @@ local function createContentPanel()
     panel.ScrollBarThickness = 6
     panel.ScrollBarImageColor3 = Color3.fromRGB(0, 200, 255)
     panel.BorderSizePixel = 0
-    panel.CanvasSize = UDim2.new(0, 0, 0, 0) -- will be automatic
+    panel.CanvasSize = UDim2.new(0, 0, 0, 0)
     panel.AutomaticCanvasSize = Enum.AutomaticSize.Y
     panel.Parent = mainFrame
-    
     local padding = Instance.new("UIPadding")
     padding.PaddingTop = UDim.new(0, 10)
     padding.PaddingBottom = UDim.new(0, 10)
     padding.Parent = panel
-    
     local layout = Instance.new("UIListLayout")
     layout.Padding = UDim.new(0, 8)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.Parent = panel
-    
     return panel
 end
 
@@ -281,7 +268,7 @@ local scriptsPanel = createContentPanel()
 local apeiroPanel = createContentPanel()
 apeiroPanel.Visible = false
 
--- helper to add a button to a panel
+-- ========== STYLED BUTTON CREATION (with animated border) ==========
 local function addButton(panel, text, callback, color)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 38)
@@ -298,9 +285,20 @@ local function addButton(panel, text, callback, color)
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = btn
     
+    -- Animated glowing border (pulse effect)
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1.5
+    stroke.Color = Color3.fromRGB(0, 200, 255)
+    stroke.Transparency = 0.8
+    stroke.Parent = btn
+    
+    -- Create pulsing tween
+    local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
+    local tween = TweenService:Create(stroke, tweenInfo, {Transparency = 0.2})
+    tween:Play()
+    
     btn.MouseButton1Click:Connect(function()
-        pcall(callback)
-        -- Visual feedback
+        safeExecute(callback, text)
         local originalColor = btn.BackgroundColor3
         btn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
         task.wait(0.1)
@@ -325,6 +323,14 @@ local function addToggleButton(panel, text, initialState, onToggle)
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = btn
     
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 1.5
+    stroke.Color = Color3.fromRGB(0, 200, 255)
+    stroke.Transparency = 0.8
+    stroke.Parent = btn
+    local tween = TweenService:Create(stroke, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Transparency = 0.2})
+    tween:Play()
+    
     local function updateUI(state)
         btn.Text = text .. (state and " ✓" or "")
         btn.BackgroundColor3 = state and Color3.fromRGB(0, 130, 100) or Color3.fromRGB(30, 30, 55)
@@ -333,13 +339,11 @@ local function addToggleButton(panel, text, initialState, onToggle)
     btn.MouseButton1Click:Connect(function()
         local newState = not (btn.Text:find("✓"))
         updateUI(newState)
-        pcall(onToggle, newState)
+        safeExecute(function() onToggle(newState) end, text)
     end)
     return btn
 end
 
--- ========== POPULATE SCRIPTS TAB ==========
--- Section headers
 local function addSectionHeader(panel, title)
     local header = Instance.new("TextLabel")
     header.Size = UDim2.new(1, 0, 0, 30)
@@ -352,6 +356,7 @@ local function addSectionHeader(panel, title)
     header.Parent = panel
 end
 
+-- ========== POPULATE SCRIPTS TAB ==========
 addSectionHeader(scriptsPanel, "✈️ FLY SCRIPTS")
 addButton(scriptsPanel, "🕊️ Simple Fly (X to toggle)", function()
     loadstring([[
@@ -928,7 +933,7 @@ addButton(apeiroPanel, "🔮 Full ESP (Entities/Items/Exit)", function()
     ]])()
 end)
 
--- Tab switching callbacks
+-- ========== TAB SWITCHING ==========
 scriptsBtn.MouseButton1Click:Connect(function()
     scriptsPanel.Visible = true
     apeiroPanel.Visible = false
@@ -942,8 +947,8 @@ apeiroBtn.MouseButton1Click:Connect(function()
     scriptsBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
 end)
 
--- Ensure panels have correct initial visibility
+-- Ensure initial visibility
 scriptsPanel.Visible = true
 apeiroPanel.Visible = false
 
-print("✨ Space Hub loaded – Modern GUI with in‑window animated stars")
+print("✨ Space Hub loaded – Animated buttons + error logging ready")
