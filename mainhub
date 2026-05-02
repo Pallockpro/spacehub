@@ -1,4 +1,4 @@
---[ Space Hub - Modern GUI with Animated Buttons + Error Debug ]--
+--[ Space Hub - Fully Fixed | Smooth UI, Working Toggles, Draggable Popups ]--
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -30,6 +30,10 @@ local noclipEnabled = false
 local noclipStepped = nil
 local noclipCharConn = nil
 
+-- References for UI sync (toggle buttons)
+local infJumpToggleBtn = nil
+local noclipToggleBtn = nil
+
 -- ========== HELPER FUNCTIONS ==========
 local function applyWalkSpeed(char)
     if walkSpeedEnabled and char and char:FindFirstChild("Humanoid") then
@@ -46,10 +50,12 @@ local function startSpeedPersistence()
     applyWalkSpeed(player.Character)
 end
 
-local function enableInfiniteJump()
-    if infJumpEnabled then return end
-    infJumpEnabled = true
-    UserInputService.JumpRequest:Connect(function()
+-- Infinite Jump (reliable)
+local jumpRequestConn = nil
+local function refreshInfiniteJump()
+    if jumpRequestConn then jumpRequestConn:Disconnect() end
+    if not infJumpEnabled then return end
+    jumpRequestConn = UserInputService.JumpRequest:Connect(function()
         if infJumpEnabled then
             local char = player.Character
             if char and char:FindFirstChild("Humanoid") then
@@ -59,10 +65,23 @@ local function enableInfiniteJump()
     end)
 end
 
+local function setInfiniteJump(state)
+    infJumpEnabled = state
+    refreshInfiniteJump()
+    if infJumpToggleBtn then
+        local text = infJumpToggleBtn.Text:gsub(" ✓", "")
+        infJumpToggleBtn.Text = text .. (infJumpEnabled and " ✓" or "")
+        infJumpToggleBtn.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 130, 100) or Color3.fromRGB(30, 30, 55)
+    end
+end
+
+-- Noclip
 local function applyNoclip(char)
     if noclipEnabled and char then
         for _, part in pairs(char:GetDescendants()) do
-            if part:IsA("BasePart") then part.CanCollide = false end
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
         end
     end
 end
@@ -76,8 +95,15 @@ local function startNoclip()
         applyNoclip(char)
     end)
     noclipStepped = RunService.Stepped:Connect(function()
-        if noclipEnabled and player.Character then applyNoclip(player.Character) end
+        if noclipEnabled and player.Character then
+            applyNoclip(player.Character)
+        end
     end)
+    if noclipToggleBtn then
+        local text = noclipToggleBtn.Text:gsub(" ✓", "")
+        noclipToggleBtn.Text = text .. " ✓"
+        noclipToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 130, 100)
+    end
 end
 
 local function stopNoclip()
@@ -86,18 +112,28 @@ local function stopNoclip()
     if noclipStepped then noclipStepped:Disconnect() noclipStepped = nil end
     if player.Character then
         for _, part in pairs(player.Character:GetDescendants()) do
-            if part:IsA("BasePart") then part.CanCollide = true end
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
         end
+    end
+    if noclipToggleBtn then
+        local text = noclipToggleBtn.Text:gsub(" ✓", "")
+        noclipToggleBtn.Text = text
+        noclipToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
     end
 end
 
--- Toggle keys (J / N)
+local function toggleNoclip()
+    if noclipEnabled then stopNoclip() else startNoclip() end
+end
+
+-- Sync with keybinds (J / N)
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.J then
-        infJumpEnabled = not infJumpEnabled
-        if infJumpEnabled then enableInfiniteJump() end
+        setInfiniteJump(not infJumpEnabled)
     elseif input.KeyCode == Enum.KeyCode.N then
-        if noclipEnabled then stopNoclip() else startNoclip() end
+        toggleNoclip()
     end
 end)
 
@@ -268,7 +304,7 @@ local scriptsPanel = createContentPanel()
 local apeiroPanel = createContentPanel()
 apeiroPanel.Visible = false
 
--- ========== STYLED BUTTON CREATION (with animated border) ==========
+-- ========== STYLED BUTTON CREATION ==========
 local function addButton(panel, text, callback, color)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 38)
@@ -285,16 +321,12 @@ local function addButton(panel, text, callback, color)
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = btn
     
-    -- Animated glowing border (pulse effect)
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = 1.5
     stroke.Color = Color3.fromRGB(0, 200, 255)
     stroke.Transparency = 0.8
     stroke.Parent = btn
-    
-    -- Create pulsing tween
-    local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-    local tween = TweenService:Create(stroke, tweenInfo, {Transparency = 0.2})
+    local tween = TweenService:Create(stroke, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Transparency = 0.2})
     tween:Play()
     
     btn.MouseButton1Click:Connect(function()
@@ -541,26 +573,74 @@ end)
 addSectionHeader(scriptsPanel, "🏃 SPEED & MOVEMENT")
 addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 220, 0, 110)
-    frame.Position = UDim2.new(0.5, -110, 0.5, -55)
+    frame.Size = UDim2.new(0, 260, 0, 130)
+    frame.Position = UDim2.new(0.5, -130, 0.5, -65)
     frame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
     frame.BorderSizePixel = 0
+    frame.BackgroundTransparency = 0.1
     frame.Parent = screenGui
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 10)
-    corner.Parent = frame
+    
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 10)
+    frameCorner.Parent = frame
+    
+    -- Draggable title bar
+    local dragBar = Instance.new("Frame")
+    dragBar.Size = UDim2.new(1, 0, 0, 30)
+    dragBar.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
+    dragBar.BackgroundTransparency = 0.3
+    dragBar.BorderSizePixel = 0
+    dragBar.Parent = frame
+    local dragCorner = Instance.new("UICorner")
+    dragCorner.CornerRadius = UDim.new(0, 10)
+    dragCorner.Parent = dragBar
+    
+    local dragLabel = Instance.new("TextLabel")
+    dragLabel.Size = UDim2.new(1, 0, 1, 0)
+    dragLabel.Text = "  Set Walk Speed"
+    dragLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dragLabel.TextXAlignment = Enum.TextXAlignment.Left
+    dragLabel.Font = Enum.Font.Gotham
+    dragLabel.TextSize = 14
+    dragLabel.BackgroundTransparency = 1
+    dragLabel.Parent = dragBar
+    
+    -- Make frame draggable using the bar
+    local dragStart, dragStartPos
+    local draggingPopup = false
+    dragBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingPopup = true
+            dragStart = input.Position
+            dragStartPos = frame.Position
+        end
+    end)
+    dragBar.InputEnded:Connect(function()
+        draggingPopup = false
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if draggingPopup and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(dragStartPos.X.Scale, dragStartPos.X.Offset + delta.X, dragStartPos.Y.Scale, dragStartPos.Y.Offset + delta.Y)
+        end
+    end)
+    
     local box = Instance.new("TextBox")
     box.Size = UDim2.new(1, -20, 0, 35)
-    box.Position = UDim2.new(0, 10, 0, 15)
+    box.Position = UDim2.new(0, 10, 0, 40)
     box.PlaceholderText = "Speed (16-250)"
     box.Text = tostring(walkSpeedValue)
     box.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
     box.TextColor3 = Color3.fromRGB(255,255,255)
     box.BorderSizePixel = 0
     box.Parent = frame
+    local boxCorner = Instance.new("UICorner")
+    boxCorner.CornerRadius = UDim.new(0, 6)
+    boxCorner.Parent = box
+    
     local ok = Instance.new("TextButton")
     ok.Size = UDim2.new(0, 100, 0, 35)
-    ok.Position = UDim2.new(0.5, -50, 1, -45)
+    ok.Position = UDim2.new(0.5, -50, 1, -40)
     ok.Text = "Apply"
     ok.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
     ok.TextColor3 = Color3.fromRGB(255,255,255)
@@ -577,18 +657,23 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
             startSpeedPersistence()
             applyWalkSpeed(player.Character)
             frame:Destroy()
+        else
+            game:GetService("StarterGui"):SetCore("SendNotification", {Title="Error", Text="Invalid speed (16-250)", Duration=2})
         end
     end)
 end)
 
-addToggleButton(scriptsPanel, "🦘 Infinite Jump (J to toggle)", infJumpEnabled, function(state)
-    infJumpEnabled = state
-    if state then enableInfiniteJump() end
+-- Infinite Jump toggle (store reference)
+local infJumpBtn = addToggleButton(scriptsPanel, "🦘 Infinite Jump (J to toggle)", infJumpEnabled, function(state)
+    setInfiniteJump(state)
 end)
+infJumpToggleBtn = infJumpBtn
 
-addToggleButton(scriptsPanel, "👻 Noclip (N to toggle)", noclipEnabled, function(state)
+-- Noclip toggle (store reference)
+local noclipBtn = addToggleButton(scriptsPanel, "👻 Noclip (N to toggle)", noclipEnabled, function(state)
     if state then startNoclip() else stopNoclip() end
 end)
+noclipToggleBtn = noclipBtn
 
 addSectionHeader(scriptsPanel, "🛠️ OTHER UTILITIES")
 addButton(scriptsPanel, "📍 Click Teleport (T)", function()
@@ -947,8 +1032,8 @@ apeiroBtn.MouseButton1Click:Connect(function()
     scriptsBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
 end)
 
--- Ensure initial visibility
+-- Initial visibility
 scriptsPanel.Visible = true
 apeiroPanel.Visible = false
 
-print("✨ Space Hub loaded – Animated buttons + error logging ready")
+print("✨ Space Hub fully fixed – Enjoy!")
