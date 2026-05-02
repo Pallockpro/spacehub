@@ -1,4 +1,4 @@
---[ Space Hub - Transparent Buttons, Starfield Visible Through All Controls ]--
+--[ Space Hub - Modern GUI with Animated Starfield & ERLC Tab ]--
 -- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -145,7 +145,7 @@ local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 500, 0, 600)
 mainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
 mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
-mainFrame.BackgroundTransparency = 0.3  -- more transparent to let stars shine
+mainFrame.BackgroundTransparency = 0.3
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
@@ -251,10 +251,10 @@ tabContainer.Position = UDim2.new(0, 0, 0, 40)
 tabContainer.BackgroundTransparency = 1
 tabContainer.Parent = mainFrame
 
-local function createTabButton(name, activeColor, inactiveColor, callback)
+-- Create tab buttons for three tabs
+local function createTabButton(name, inactiveColor, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.5, -4, 1, -6)
-    btn.Position = UDim2.new(0, 2, 0, 2)
+    btn.Size = UDim2.new(0.33, -4, 1, -6)
     btn.Text = name
     btn.BackgroundColor3 = inactiveColor
     btn.BackgroundTransparency = 0.4
@@ -270,10 +270,14 @@ local function createTabButton(name, activeColor, inactiveColor, callback)
     return btn
 end
 
-local scriptsBtn = createTabButton("🚀 SCRIPTS", Color3.fromRGB(0, 150, 200), Color3.fromRGB(30, 30, 55), nil)
-local apeiroBtn = createTabButton("🌌 APEIROPHOBIA", Color3.fromRGB(0, 150, 200), Color3.fromRGB(30, 30, 55), nil)
+local scriptsBtn = createTabButton("🚀 SCRIPTS", Color3.fromRGB(30, 30, 55), nil)
+local apeiroBtn = createTabButton("🌌 APEIROPHOBIA", Color3.fromRGB(30, 30, 55), nil)
+local erlcBtn = createTabButton("🚔 ERLC", Color3.fromRGB(30, 30, 55), nil)
+
+-- Position them evenly
 scriptsBtn.Position = UDim2.new(0, 2, 0, 2)
-apeiroBtn.Position = UDim2.new(0.5, 2, 0, 2)
+apeiroBtn.Position = UDim2.new(0.33, 2, 0, 2)
+erlcBtn.Position = UDim2.new(0.66, 2, 0, 2)
 
 -- ========== CONTENT PANELS ==========
 local function createContentPanel()
@@ -300,14 +304,16 @@ end
 
 local scriptsPanel = createContentPanel()
 local apeiroPanel = createContentPanel()
+local erlcPanel = createContentPanel()
 apeiroPanel.Visible = false
+erlcPanel.Visible = false
 
--- ========== TRANSPARENT BUTTONS (Only Text + Glow) ==========
+-- ========== STYLED BUTTON CREATION (Transparent with glow) ==========
 local function addButton(panel, text, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, -20, 0, 38)
     btn.Text = text
-    btn.BackgroundTransparency = 1          -- <-- fully transparent
+    btn.BackgroundTransparency = 1
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 14
@@ -318,7 +324,6 @@ local function addButton(panel, text, callback)
     btnCorner.CornerRadius = UDim.new(0, 8)
     btnCorner.Parent = btn
     
-    -- Glowing border only (no background fill)
     local stroke = Instance.new("UIStroke")
     stroke.Thickness = 1.5
     stroke.Color = Color3.fromRGB(0, 200, 255)
@@ -329,7 +334,6 @@ local function addButton(panel, text, callback)
     
     btn.MouseButton1Click:Connect(function()
         safeExecute(callback, text)
-        -- flash effect on border
         local originalColor = stroke.Color
         stroke.Color = Color3.fromRGB(0, 255, 255)
         task.wait(0.1)
@@ -369,7 +373,6 @@ local function addToggleButton(panel, text, initialState, onToggle)
         local newState = not (btn.Text:find("✓"))
         updateUI(newState)
         safeExecute(function() onToggle(newState) end, text)
-        -- flash effect
         local originalColor = stroke.Color
         stroke.Color = Color3.fromRGB(0, 255, 255)
         task.wait(0.1)
@@ -390,7 +393,7 @@ local function addSectionHeader(panel, title)
     header.Parent = panel
 end
 
--- ========== POPULATE SCRIPTS TAB ==========
+-- ========== POPULATE SCRIPTS TAB (removed Car Fly & Car Speed) ==========
 addSectionHeader(scriptsPanel, "✈️ FLY SCRIPTS")
 addButton(scriptsPanel, "🕊️ Simple Fly (X to toggle)", function()
     loadstring([[
@@ -453,92 +456,6 @@ addButton(scriptsPanel, "🕊️ Simple Fly (X to toggle)", function()
     ]])()
 end)
 
-addButton(scriptsPanel, "🏎️ Car Fly (V to toggle)", function()
-    loadstring([[
-        local FlyKey = Enum.KeyCode.V
-        local SpeedKey = Enum.KeyCode.LeftControl
-        local SpeedKeyMultiplier = 2
-        local FlightSpeed = 80
-        local VerticalSpeed = 40
-        local FlightAcceleration = 8
-        local TurnSpeed = 6
-        local UIS = game:GetService("UserInputService")
-        local SG = game:GetService("StarterGui")
-        local RS = game:GetService("RunService")
-        local Players = game:GetService("Players")
-        local User = Players.LocalPlayer
-        local Camera = workspace.CurrentCamera
-        local UserRootPart = nil
-        local Connection = nil
-        local CurrentVelocity = Vector3.zero
-        local BodyMover = nil
-        local RightClickHeld = false
-        local function notify(text) SG:SetCore("SendNotification", {Title="car fly", Text=text}) end
-        local function setCharacter(c) UserRootPart = c:WaitForChild("HumanoidRootPart") end
-        User.CharacterAdded:Connect(setCharacter)
-        if User.Character then setCharacter(User.Character) end
-        local function destroyMover() if BodyMover then BodyMover:Destroy() BodyMover = nil end end
-        UIS.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton2 then RightClickHeld = true end end)
-        UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton2 then RightClickHeld = false end end)
-        local function Flight(delta)
-            if not UserRootPart then return end
-            local car = UserRootPart:GetRootPart()
-            if not car or car.Anchored then return end
-            local horizontalDir = Vector3.zero
-            local verticalDir = 0
-            if not UIS:GetFocusedTextBox() then
-                local camLook = Camera.CFrame.LookVector
-                local camRight = Camera.CFrame.RightVector
-                local flatLook = Vector3.new(camLook.X, 0, camLook.Z)
-                local flatRight = Vector3.new(camRight.X, 0, camRight.Z)
-                if flatLook.Magnitude > 0.01 then flatLook = flatLook.Unit end
-                if flatRight.Magnitude > 0.01 then flatRight = flatRight.Unit end
-                local wHeld = UIS:IsKeyDown(Enum.KeyCode.W)
-                if wHeld and RightClickHeld then
-                    horizontalDir = flatLook
-                else
-                    if wHeld then horizontalDir = horizontalDir + flatLook end
-                    if UIS:IsKeyDown(Enum.KeyCode.S) then horizontalDir = horizontalDir - flatLook end
-                    if UIS:IsKeyDown(Enum.KeyCode.A) then horizontalDir = horizontalDir - flatRight end
-                    if UIS:IsKeyDown(Enum.KeyCode.D) then horizontalDir = horizontalDir + flatRight end
-                end
-                if UIS:IsKeyDown(Enum.KeyCode.E) then verticalDir = 1 end
-                if UIS:IsKeyDown(Enum.KeyCode.Q) then verticalDir = -1 end
-            end
-            local speed = FlightSpeed * (UIS:IsKeyDown(SpeedKey) and SpeedKeyMultiplier or 1)
-            local flatTarget = (horizontalDir.Magnitude > 0 and horizontalDir.Unit or Vector3.zero) * speed
-            local vertTarget = Vector3.new(0, verticalDir * VerticalSpeed, 0)
-            local target = flatTarget + vertTarget
-            CurrentVelocity = CurrentVelocity:Lerp(target, math.clamp(delta * FlightAcceleration, 0, 1))
-            if not BodyMover then
-                BodyMover = Instance.new("BodyVelocity")
-                BodyMover.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-                BodyMover.P = 8e3
-                BodyMover.Parent = car
-            end
-            BodyMover.Velocity = CurrentVelocity
-        end
-        UIS.InputBegan:Connect(function(input, gp)
-            if gp or input.KeyCode ~= FlyKey then return end
-            if Connection then
-                Connection:Disconnect()
-                Connection = nil
-                destroyMover()
-                notify("disabled")
-            else
-                CurrentVelocity = Vector3.new(UserRootPart.AssemblyLinearVelocity.X, 0, UserRootPart.AssemblyLinearVelocity.Z)
-                Connection = RS.Heartbeat:Connect(Flight)
-                notify("enabled")
-            end
-        end)
-        notify("car fly ready - press V")
-    ]])()
-end)
-
-addButton(scriptsPanel, "⚡ Car Speed (External)", function()
-    loadstring(game:HttpGet("https://rawscripts.net/raw/Emergency-Response:-Liberty-County-Car-Boost-Cheat-4590"))()
-end)
-
 addButton(scriptsPanel, "🌀 Fling Script (F to toggle)", function()
     loadstring([[
         local Player = game:GetService("Players").LocalPlayer
@@ -578,7 +495,7 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     frame.Size = UDim2.new(0, 260, 0, 130)
     frame.Position = UDim2.new(0.5, -130, 0.5, -65)
     frame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-    frame.BackgroundTransparency = 0.2
+    frame.BackgroundTransparency = 0.1
     frame.BorderSizePixel = 0
     frame.Parent = screenGui
     
@@ -586,11 +503,10 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     frameCorner.CornerRadius = UDim.new(0, 10)
     frameCorner.Parent = frame
     
-    -- Draggable title bar
     local dragBar = Instance.new("Frame")
     dragBar.Size = UDim2.new(1, 0, 0, 30)
     dragBar.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
-    dragBar.BackgroundTransparency = 0.2
+    dragBar.BackgroundTransparency = 0.3
     dragBar.BorderSizePixel = 0
     dragBar.Parent = frame
     local dragCorner = Instance.new("UICorner")
@@ -616,9 +532,7 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
             dragStartPos = frame.Position
         end
     end)
-    dragBar.InputEnded:Connect(function()
-        draggingPopup = false
-    end)
+    dragBar.InputEnded:Connect(function() draggingPopup = false end)
     UserInputService.InputChanged:Connect(function(input)
         if draggingPopup and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
@@ -664,13 +578,11 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     end)
 end)
 
--- Infinite Jump toggle
 local infJumpBtn = addToggleButton(scriptsPanel, "🦘 Infinite Jump (J to toggle)", infJumpEnabled, function(state)
     setInfiniteJump(state)
 end)
 infJumpToggleBtn = infJumpBtn
 
--- Noclip toggle
 local noclipBtn = addToggleButton(scriptsPanel, "👻 Noclip (N to toggle)", noclipEnabled, function(state)
     if state then startNoclip() else stopNoclip() end
 end)
@@ -728,7 +640,7 @@ addButton(scriptsPanel, "👁️ Simple ESP (Players)", function()
     ]])()
 end)
 
--- ========== POPULATE APEIROPHOBIA TAB ==========
+-- ========== POPULATE APEIROPHOBIA TAB (unchanged) ==========
 addSectionHeader(apeiroPanel, "🏃 STAMINA & MOVEMENT")
 addButton(apeiroPanel, "🏃 Infinite Stamina", function()
     loadstring([[
@@ -1019,22 +931,127 @@ addButton(apeiroPanel, "🔮 Full ESP (Entities/Items/Exit)", function()
     ]])()
 end)
 
+-- ========== POPULATE ERLC TAB ==========
+addSectionHeader(erlcPanel, "🚗 CAR SCRIPTS")
+addButton(erlcPanel, "🏎️ Car Fly (V to toggle)", function()
+    loadstring([[
+        local FlyKey = Enum.KeyCode.V
+        local SpeedKey = Enum.KeyCode.LeftControl
+        local SpeedKeyMultiplier = 2
+        local FlightSpeed = 80
+        local VerticalSpeed = 40
+        local FlightAcceleration = 8
+        local TurnSpeed = 6
+        local UIS = game:GetService("UserInputService")
+        local SG = game:GetService("StarterGui")
+        local RS = game:GetService("RunService")
+        local Players = game:GetService("Players")
+        local User = Players.LocalPlayer
+        local Camera = workspace.CurrentCamera
+        local UserRootPart = nil
+        local Connection = nil
+        local CurrentVelocity = Vector3.zero
+        local BodyMover = nil
+        local RightClickHeld = false
+        local function notify(text) SG:SetCore("SendNotification", {Title="car fly", Text=text}) end
+        local function setCharacter(c) UserRootPart = c:WaitForChild("HumanoidRootPart") end
+        User.CharacterAdded:Connect(setCharacter)
+        if User.Character then setCharacter(User.Character) end
+        local function destroyMover() if BodyMover then BodyMover:Destroy() BodyMover = nil end end
+        UIS.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton2 then RightClickHeld = true end end)
+        UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton2 then RightClickHeld = false end end)
+        local function Flight(delta)
+            if not UserRootPart then return end
+            local car = UserRootPart:GetRootPart()
+            if not car or car.Anchored then return end
+            local horizontalDir = Vector3.zero
+            local verticalDir = 0
+            if not UIS:GetFocusedTextBox() then
+                local camLook = Camera.CFrame.LookVector
+                local camRight = Camera.CFrame.RightVector
+                local flatLook = Vector3.new(camLook.X, 0, camLook.Z)
+                local flatRight = Vector3.new(camRight.X, 0, camRight.Z)
+                if flatLook.Magnitude > 0.01 then flatLook = flatLook.Unit end
+                if flatRight.Magnitude > 0.01 then flatRight = flatRight.Unit end
+                local wHeld = UIS:IsKeyDown(Enum.KeyCode.W)
+                if wHeld and RightClickHeld then
+                    horizontalDir = flatLook
+                else
+                    if wHeld then horizontalDir = horizontalDir + flatLook end
+                    if UIS:IsKeyDown(Enum.KeyCode.S) then horizontalDir = horizontalDir - flatLook end
+                    if UIS:IsKeyDown(Enum.KeyCode.A) then horizontalDir = horizontalDir - flatRight end
+                    if UIS:IsKeyDown(Enum.KeyCode.D) then horizontalDir = horizontalDir + flatRight end
+                end
+                if UIS:IsKeyDown(Enum.KeyCode.E) then verticalDir = 1 end
+                if UIS:IsKeyDown(Enum.KeyCode.Q) then verticalDir = -1 end
+            end
+            local speed = FlightSpeed * (UIS:IsKeyDown(SpeedKey) and SpeedKeyMultiplier or 1)
+            local flatTarget = (horizontalDir.Magnitude > 0 and horizontalDir.Unit or Vector3.zero) * speed
+            local vertTarget = Vector3.new(0, verticalDir * VerticalSpeed, 0)
+            local target = flatTarget + vertTarget
+            CurrentVelocity = CurrentVelocity:Lerp(target, math.clamp(delta * FlightAcceleration, 0, 1))
+            if not BodyMover then
+                BodyMover = Instance.new("BodyVelocity")
+                BodyMover.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+                BodyMover.P = 8e3
+                BodyMover.Parent = car
+            end
+            BodyMover.Velocity = CurrentVelocity
+        end
+        UIS.InputBegan:Connect(function(input, gp)
+            if gp or input.KeyCode ~= FlyKey then return end
+            if Connection then
+                Connection:Disconnect()
+                Connection = nil
+                destroyMover()
+                notify("disabled")
+            else
+                CurrentVelocity = Vector3.new(UserRootPart.AssemblyLinearVelocity.X, 0, UserRootPart.AssemblyLinearVelocity.Z)
+                Connection = RS.Heartbeat:Connect(Flight)
+                notify("enabled")
+            end
+        end)
+        notify("car fly ready - press V")
+    ]])()
+end)
+
+addButton(erlcPanel, "⚡ Car Speed (External)", function()
+    loadstring(game:HttpGet("https://rawscripts.net/raw/Emergency-Response:-Liberty-County-Car-Boost-Cheat-4590"))()
+end)
+
+addButton(erlcPanel, "🎬 Animation Menu", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Emerson2-creator/Scripts-Roblox/refs/heads/main/ScriptR6/AnimGuiV2.lua"))()
+end)
+
 -- ========== TAB SWITCHING ==========
 scriptsBtn.MouseButton1Click:Connect(function()
     scriptsPanel.Visible = true
     apeiroPanel.Visible = false
+    erlcPanel.Visible = false
     scriptsBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
     apeiroBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
+    erlcBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
 end)
 apeiroBtn.MouseButton1Click:Connect(function()
     scriptsPanel.Visible = false
     apeiroPanel.Visible = true
+    erlcPanel.Visible = false
     apeiroBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
     scriptsBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
+    erlcBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
+end)
+erlcBtn.MouseButton1Click:Connect(function()
+    scriptsPanel.Visible = false
+    apeiroPanel.Visible = false
+    erlcPanel.Visible = true
+    erlcBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
+    scriptsBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
+    apeiroBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
 end)
 
 -- Initial visibility
 scriptsPanel.Visible = true
 apeiroPanel.Visible = false
+erlcPanel.Visible = false
 
-print("✨ Space Hub - Transparent buttons, starfield fully visible")
+print("✨ Space Hub fully loaded – Scripts, Apeirophobia, and ERLC tabs ready.")
