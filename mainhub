@@ -1,5 +1,5 @@
---[ Space Hub - Custom Modern GUI with Animated Background ]--
--- No external libraries, fully self-contained.
+--[ Space Hub - Modern Custom GUI with In‑Window Animated Background ]--
+-- Fixed: Background inside window, all buttons visible, smooth corners.
 
 -- Services
 local Players = game:GetService("Players")
@@ -11,7 +11,7 @@ local Lighting = game:GetService("Lighting")
 
 local player = Players.LocalPlayer
 
--- ========== GLOBAL PERSISTENT STATES ==========
+-- ========== PERSISTENT STATES ==========
 local walkSpeedEnabled = false
 local walkSpeedValue = 50
 local speedPersistConnection = nil
@@ -40,7 +40,7 @@ end
 local function enableInfiniteJump()
     if infJumpEnabled then return end
     infJumpEnabled = true
-    local jumpConn = UserInputService.JumpRequest:Connect(function()
+    UserInputService.JumpRequest:Connect(function()
         if infJumpEnabled then
             local char = player.Character
             if char and char:FindFirstChild("Humanoid") then
@@ -48,7 +48,6 @@ local function enableInfiniteJump()
             end
         end
     end)
-    -- store connection for cleanup if needed
 end
 
 local function applyNoclip(char)
@@ -89,100 +88,111 @@ local function stopNoclip()
     end
 end
 
--- Toggle keys
+-- Toggle keys (J for infinite jump, N for noclip)
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.J then
         infJumpEnabled = not infJumpEnabled
         if infJumpEnabled then enableInfiniteJump() end
-        -- notification handled by button feedback
+        -- Notification via UI later
     elseif input.KeyCode == Enum.KeyCode.N then
         if noclipEnabled then stopNoclip() else startNoclip() end
     end
 end)
 
--- ========== CREATE GUI ==========
+-- ========== CREATE MAIN GUI ==========
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SpaceHub"
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.ResetOnSpawn = false
 screenGui.Parent = CoreGui
 
--- Animated background (stars)
-local background = Instance.new("Frame")
-background.Size = UDim2.new(1, 0, 1, 0)
-background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-background.Parent = screenGui
+-- Main window (dark, rounded, shadow)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 500, 0, 600)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -300)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
+mainFrame.BackgroundTransparency = 0.05
+mainFrame.BorderSizePixel = 0
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
 
--- Create star particles (simple moving dots)
+-- Rounded corners + subtle border
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = mainFrame
+
+local border = Instance.new("UIStroke")
+border.Thickness = 1
+border.Color = Color3.fromRGB(0, 200, 255)
+border.Transparency = 0.7
+border.Parent = mainFrame
+
+-- ========== IN‑WINDOW ANIMATED STAR BACKGROUND ==========
+local bgContainer = Instance.new("Frame")
+bgContainer.Size = UDim2.new(1, 0, 1, 0)
+bgContainer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+bgContainer.BackgroundTransparency = 0.3
+bgContainer.Parent = mainFrame
+
+-- Star particles (only inside the window)
 local stars = {}
-for i = 1, 150 do
+for i = 1, 120 do
     local star = Instance.new("Frame")
-    star.Size = UDim2.new(0, math.random(1, 3), 0, math.random(1, 3))
+    local size = math.random(1, 3)
+    star.Size = UDim2.new(0, size, 0, size)
     star.Position = UDim2.new(math.random(), 0, math.random(), 0)
     star.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    star.BackgroundTransparency = math.random(50, 90) / 100
+    star.BackgroundTransparency = math.random(40, 90) / 100
     star.BorderSizePixel = 0
-    star.Parent = background
+    star.Parent = bgContainer
     table.insert(stars, star)
 end
 
--- Animate stars: slowly drift and twinkle
+-- Animate stars: drift right, wrap around, twinkle
 RunService.RenderStepped:Connect(function(dt)
     for _, star in ipairs(stars) do
-        local pos = star.Position
-        local newX = pos.X.Scale + (dt * 0.02) -- drift right
+        local newX = star.Position.X.Scale + dt * 0.03
         if newX > 1 then newX = 0 end
-        star.Position = UDim2.new(newX, 0, pos.Y.Scale, 0)
-        -- random twinkle
-        if math.random(1, 200) == 1 then
+        star.Position = UDim2.new(newX, 0, star.Position.Y.Scale, 0)
+        if math.random(1, 300) == 1 then
             star.BackgroundTransparency = math.random(30, 90) / 100
         end
     end
 end)
 
--- Main window frame (draggable)
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 450, 0, 550)
-mainFrame.Position = UDim2.new(0.5, -225, 0.5, -275)
-mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = true
-mainFrame.Parent = screenGui
-
--- Blur effect (optional, looks modern)
-local blur = Instance.new("BlurEffect")
-blur.Size = 8
-blur.Parent = mainFrame
-
--- Title bar (draggable)
+-- ========== TITLE BAR (Draggable) ==========
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 35)
-titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 50)
-titleBar.BackgroundTransparency = 0.2
+titleBar.Size = UDim2.new(1, 0, 0, 40)
+titleBar.BackgroundColor3 = Color3.fromRGB(25, 25, 45)
+titleBar.BackgroundTransparency = 0.15
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -40, 1, 0)
-title.Position = UDim2.new(0, 10, 0, 0)
-title.Text = "✨ Space Hub ✨"
-title.TextColor3 = Color3.fromRGB(0, 200, 255)
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.BackgroundTransparency = 1
-title.Parent = titleBar
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.Parent = titleBar
+-- Only top corners rounded (optional, but fine)
+
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, -50, 1, 0)
+titleText.Position = UDim2.new(0, 15, 0, 0)
+titleText.Text = "✨ SPACE HUB ✨"
+titleText.TextColor3 = Color3.fromRGB(0, 200, 255)
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 18
+titleText.BackgroundTransparency = 1
+titleText.Parent = titleBar
 
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 1, 0)
-closeBtn.Position = UDim2.new(1, -30, 0, 0)
+closeBtn.Size = UDim2.new(0, 40, 1, 0)
+closeBtn.Position = UDim2.new(1, -40, 0, 0)
 closeBtn.Text = "✖"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
 closeBtn.BorderSizePixel = 0
 closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 16
+closeBtn.TextSize = 18
 closeBtn.Parent = titleBar
 closeBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
@@ -190,8 +200,7 @@ end)
 
 -- Make window draggable
 local dragging = false
-local dragStart
-local startPos
+local dragStart, startPos
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
@@ -211,65 +220,87 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Tab buttons
+-- ========== TAB BUTTONS ==========
 local tabContainer = Instance.new("Frame")
-tabContainer.Size = UDim2.new(1, 0, 0, 40)
-tabContainer.Position = UDim2.new(0, 0, 0, 35)
+tabContainer.Size = UDim2.new(1, 0, 0, 45)
+tabContainer.Position = UDim2.new(0, 0, 0, 40)
 tabContainer.BackgroundTransparency = 1
 tabContainer.Parent = mainFrame
 
-local function createTabButton(name, color, callback)
+local function createTabButton(name, activeColor, inactiveColor, callback)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.5, -2, 1, -4)
+    btn.Size = UDim2.new(0.5, -4, 1, -6)
     btn.Position = UDim2.new(0, 2, 0, 2)
     btn.Text = name
-    btn.BackgroundColor3 = color
-    btn.BackgroundTransparency = 0.3
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundColor3 = inactiveColor
+    btn.BackgroundTransparency = 0.2
+    btn.TextColor3 = Color3.fromRGB(220, 220, 255)
     btn.Font = Enum.Font.GothamSemibold
     btn.TextSize = 15
     btn.BorderSizePixel = 0
     btn.Parent = tabContainer
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
     btn.MouseButton1Click:Connect(callback)
     return btn
 end
 
--- Content panels
-local scriptsPanel = Instance.new("ScrollingFrame")
-scriptsPanel.Size = UDim2.new(1, -20, 1, -85)
-scriptsPanel.Position = UDim2.new(0, 10, 0, 80)
-scriptsPanel.BackgroundTransparency = 1
-scriptsPanel.ScrollBarThickness = 6
-scriptsPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
-scriptsPanel.AutomaticCanvasSize = Enum.AutomaticSize.Y
-scriptsPanel.Parent = mainFrame
+local scriptsBtn = createTabButton("🚀 SCRIPTS", Color3.fromRGB(0, 150, 200), Color3.fromRGB(30, 30, 55), nil)
+local apeiroBtn = createTabButton("🌌 APEIROPHOBIA", Color3.fromRGB(0, 150, 200), Color3.fromRGB(30, 30, 55), nil)
+scriptsBtn.Position = UDim2.new(0, 2, 0, 2)
+apeiroBtn.Position = UDim2.new(0.5, 2, 0, 2)
 
-local mm2Panel = Instance.new("ScrollingFrame") -- we'll repurpose for Apeirophobia
-mm2Panel.Size = UDim2.new(1, -20, 1, -85)
-mm2Panel.Position = UDim2.new(0, 10, 0, 80)
-mm2Panel.BackgroundTransparency = 1
-mm2Panel.ScrollBarThickness = 6
-mm2Panel.CanvasSize = UDim2.new(0, 0, 0, 0)
-mm2Panel.AutomaticCanvasSize = Enum.AutomaticSize.Y
-mm2Panel.Visible = false
-mm2Panel.Parent = mainFrame
+-- ========== SCROLLING PANELS (Content) ==========
+local function createContentPanel()
+    local panel = Instance.new("ScrollingFrame")
+    panel.Size = UDim2.new(1, -20, 1, -95)
+    panel.Position = UDim2.new(0, 10, 0, 90)
+    panel.BackgroundTransparency = 1
+    panel.ScrollBarThickness = 6
+    panel.ScrollBarImageColor3 = Color3.fromRGB(0, 200, 255)
+    panel.BorderSizePixel = 0
+    panel.CanvasSize = UDim2.new(0, 0, 0, 0) -- will be automatic
+    panel.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    panel.Parent = mainFrame
+    
+    local padding = Instance.new("UIPadding")
+    padding.PaddingTop = UDim.new(0, 10)
+    padding.PaddingBottom = UDim.new(0, 10)
+    padding.Parent = panel
+    
+    local layout = Instance.new("UIListLayout")
+    layout.Padding = UDim.new(0, 8)
+    layout.SortOrder = Enum.SortOrder.LayoutOrder
+    layout.Parent = panel
+    
+    return panel
+end
 
--- Function to create a styled button inside a panel
+local scriptsPanel = createContentPanel()
+local apeiroPanel = createContentPanel()
+apeiroPanel.Visible = false
+
+-- helper to add a button to a panel
 local function addButton(panel, text, callback, color)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -20, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, 10)
+    btn.Size = UDim2.new(1, -20, 0, 38)
     btn.Text = text
-    btn.BackgroundColor3 = color or Color3.fromRGB(30, 30, 60)
+    btn.BackgroundColor3 = color or Color3.fromRGB(30, 30, 55)
     btn.BackgroundTransparency = 0.2
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
     btn.TextSize = 14
     btn.BorderSizePixel = 0
     btn.Parent = panel
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
     btn.MouseButton1Click:Connect(function()
         pcall(callback)
-        -- visual feedback
+        -- Visual feedback
         local originalColor = btn.BackgroundColor3
         btn.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
         task.wait(0.1)
@@ -280,10 +311,9 @@ end
 
 local function addToggleButton(panel, text, initialState, onToggle)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -20, 0, 40)
-    btn.Position = UDim2.new(0, 10, 0, 10)
+    btn.Size = UDim2.new(1, -20, 0, 38)
     btn.Text = text .. (initialState and " ✓" or "")
-    btn.BackgroundColor3 = initialState and Color3.fromRGB(0, 150, 100) or Color3.fromRGB(30, 30, 60)
+    btn.BackgroundColor3 = initialState and Color3.fromRGB(0, 130, 100) or Color3.fromRGB(30, 30, 55)
     btn.BackgroundTransparency = 0.2
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.Gotham
@@ -291,9 +321,13 @@ local function addToggleButton(panel, text, initialState, onToggle)
     btn.BorderSizePixel = 0
     btn.Parent = panel
     
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = btn
+    
     local function updateUI(state)
         btn.Text = text .. (state and " ✓" or "")
-        btn.BackgroundColor3 = state and Color3.fromRGB(0, 150, 100) or Color3.fromRGB(30, 30, 60)
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 130, 100) or Color3.fromRGB(30, 30, 55)
     end
     
     btn.MouseButton1Click:Connect(function()
@@ -304,17 +338,21 @@ local function addToggleButton(panel, text, initialState, onToggle)
     return btn
 end
 
--- ========== SCRIPTS TAB CONTENT ==========
--- Fly scripts section
-local flyLabel = Instance.new("TextLabel")
-flyLabel.Size = UDim2.new(1, 0, 0, 30)
-flyLabel.Text = "🔹 Fly Scripts"
-flyLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
-flyLabel.Font = Enum.Font.GothamBold
-flyLabel.TextSize = 16
-flyLabel.BackgroundTransparency = 1
-flyLabel.Parent = scriptsPanel
+-- ========== POPULATE SCRIPTS TAB ==========
+-- Section headers
+local function addSectionHeader(panel, title)
+    local header = Instance.new("TextLabel")
+    header.Size = UDim2.new(1, 0, 0, 30)
+    header.Text = "   " .. title
+    header.TextColor3 = Color3.fromRGB(0, 200, 255)
+    header.Font = Enum.Font.GothamBold
+    header.TextSize = 16
+    header.BackgroundTransparency = 1
+    header.TextXAlignment = Enum.TextXAlignment.Left
+    header.Parent = panel
+end
 
+addSectionHeader(scriptsPanel, "✈️ FLY SCRIPTS")
 addButton(scriptsPanel, "🕊️ Simple Fly (X to toggle)", function()
     loadstring([[
         local plr = game.Players.LocalPlayer
@@ -458,7 +496,7 @@ addButton(scriptsPanel, "🏎️ Car Fly (V to toggle)", function()
     ]])()
 end)
 
-addButton(scriptsPanel, "⚡ Car Speed", function()
+addButton(scriptsPanel, "⚡ Car Speed (External)", function()
     loadstring(game:HttpGet("https://rawscripts.net/raw/Emergency-Response:-Liberty-County-Car-Boost-Cheat-4590"))()
 end)
 
@@ -495,42 +533,37 @@ addButton(scriptsPanel, "🌀 Fling Script (F to toggle)", function()
     ]])()
 end)
 
--- Speed scripts
-local speedLabel = Instance.new("TextLabel")
-speedLabel.Size = UDim2.new(1, 0, 0, 30)
-speedLabel.Text = "🔹 Speed & Movement"
-speedLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
-speedLabel.Font = Enum.Font.GothamBold
-speedLabel.TextSize = 16
-speedLabel.BackgroundTransparency = 1
-speedLabel.Parent = scriptsPanel
-
+addSectionHeader(scriptsPanel, "🏃 SPEED & MOVEMENT")
 addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
-    local spd = tonumber(string.sub(game:GetService("GuiService"):GetClipboard(), 1, 3))
-    spd = spd or 50
-    local speedVal = Instance.new("NumberValue")
-    speedVal.Value = 50
-    -- simple popup using InputBox (we'll use a textbox)
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 200, 0, 100)
-    frame.Position = UDim2.new(0.5, -100, 0.5, -50)
-    frame.BackgroundColor3 = Color3.fromRGB(20,20,40)
+    frame.Size = UDim2.new(0, 220, 0, 110)
+    frame.Position = UDim2.new(0.5, -110, 0.5, -55)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 40)
     frame.BorderSizePixel = 0
     frame.Parent = screenGui
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = frame
     local box = Instance.new("TextBox")
-    box.Size = UDim2.new(1, -20, 0, 30)
-    box.Position = UDim2.new(0, 10, 0, 20)
+    box.Size = UDim2.new(1, -20, 0, 35)
+    box.Position = UDim2.new(0, 10, 0, 15)
     box.PlaceholderText = "Speed (16-250)"
     box.Text = tostring(walkSpeedValue)
-    box.BackgroundColor3 = Color3.fromRGB(50,50,70)
+    box.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
     box.TextColor3 = Color3.fromRGB(255,255,255)
+    box.BorderSizePixel = 0
     box.Parent = frame
     local ok = Instance.new("TextButton")
-    ok.Size = UDim2.new(0, 80, 0, 30)
-    ok.Position = UDim2.new(0.5, -40, 1, -40)
+    ok.Size = UDim2.new(0, 100, 0, 35)
+    ok.Position = UDim2.new(0.5, -50, 1, -45)
     ok.Text = "Apply"
-    ok.BackgroundColor3 = Color3.fromRGB(0,150,200)
+    ok.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
+    ok.TextColor3 = Color3.fromRGB(255,255,255)
+    ok.BorderSizePixel = 0
     ok.Parent = frame
+    local okCorner = Instance.new("UICorner")
+    okCorner.CornerRadius = UDim.new(0, 6)
+    okCorner.Parent = ok
     ok.MouseButton1Click:Connect(function()
         local new = tonumber(box.Text)
         if new and new >= 16 and new <= 250 then
@@ -543,27 +576,16 @@ addButton(scriptsPanel, "⚙️ Set Walk Speed (Persistent)", function()
     end)
 end)
 
--- Persistent Infinite Jump toggle
 addToggleButton(scriptsPanel, "🦘 Infinite Jump (J to toggle)", infJumpEnabled, function(state)
     infJumpEnabled = state
     if state then enableInfiniteJump() end
 end)
 
--- Persistent Noclip toggle
 addToggleButton(scriptsPanel, "👻 Noclip (N to toggle)", noclipEnabled, function(state)
     if state then startNoclip() else stopNoclip() end
 end)
 
--- Other utilities
-local utilLabel = Instance.new("TextLabel")
-utilLabel.Size = UDim2.new(1, 0, 0, 30)
-utilLabel.Text = "🔹 Other Utilities"
-utilLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
-utilLabel.Font = Enum.Font.GothamBold
-utilLabel.TextSize = 16
-utilLabel.BackgroundTransparency = 1
-utilLabel.Parent = scriptsPanel
-
+addSectionHeader(scriptsPanel, "🛠️ OTHER UTILITIES")
 addButton(scriptsPanel, "📍 Click Teleport (T)", function()
     loadstring([[
         local plr = game.Players.LocalPlayer
@@ -615,13 +637,9 @@ addButton(scriptsPanel, "👁️ Simple ESP (Players)", function()
     ]])()
 end)
 
--- ========== APEIROPHOBIA TAB CONTENT ==========
-local function addApeiroButton(text, callback)
-    addButton(mm2Panel, text, callback)
-end
-
--- Add all Apeirophobia scripts
-addApeiroButton("🏃 Infinite Stamina", function()
+-- ========== POPULATE APEIROPHOBIA TAB ==========
+addSectionHeader(apeiroPanel, "🏃 STAMINA & MOVEMENT")
+addButton(apeiroPanel, "🏃 Infinite Stamina", function()
     loadstring([[
         local player = game.Players.LocalPlayer
         local function setup()
@@ -645,7 +663,8 @@ addApeiroButton("🏃 Infinite Stamina", function()
     ]])()
 end)
 
-addApeiroButton("🔍 Item ESP + Exit Finder", function()
+addSectionHeader(apeiroPanel, "🔍 ESP & VISIBILITY")
+addButton(apeiroPanel, "🔍 Item ESP + Exit Finder", function()
     loadstring([[
         local rs = game:GetService("RunService")
         local function scan()
@@ -671,7 +690,7 @@ addApeiroButton("🔍 Item ESP + Exit Finder", function()
     ]])()
 end)
 
-addApeiroButton("🚪 Exit ESP (Red Highlight)", function()
+addButton(apeiroPanel, "🚪 Exit ESP (Red Highlight)", function()
     loadstring([[
         local rs = game:GetService("RunService")
         local function findExit()
@@ -693,7 +712,7 @@ addApeiroButton("🚪 Exit ESP (Red Highlight)", function()
     ]])()
 end)
 
-addApeiroButton("🩻 X-Ray Vision (See Through Walls)", function()
+addButton(apeiroPanel, "🩻 X-Ray Vision (See Through Walls)", function()
     loadstring([[
         local function xray()
             for _, obj in pairs(workspace:GetDescendants()) do
@@ -711,7 +730,7 @@ addApeiroButton("🩻 X-Ray Vision (See Through Walls)", function()
     ]])()
 end)
 
-addApeiroButton("💨 Remove Fog & Darkness", function()
+addButton(apeiroPanel, "💨 Remove Fog & Darkness", function()
     loadstring([[
         local lighting = game:GetService("Lighting")
         lighting.FogEnd = 100000
@@ -726,7 +745,8 @@ addApeiroButton("💨 Remove Fog & Darkness", function()
     ]])()
 end)
 
-addApeiroButton("🖱️ Auto Clicker (C to toggle)", function()
+addSectionHeader(apeiroPanel, "⚡ UTILITIES")
+addButton(apeiroPanel, "🖱️ Auto Clicker (C to toggle)", function()
     loadstring([[
         local UIS = game:GetService("UserInputService")
         local clicking = false
@@ -756,21 +776,24 @@ addApeiroButton("🖱️ Auto Clicker (C to toggle)", function()
     ]])()
 end)
 
-addApeiroButton("⚡ Speed Boost (GUI Slider)", function()
+addButton(apeiroPanel, "⚡ Speed Boost (GUI Slider)", function()
     loadstring([[
         local player = game.Players.LocalPlayer
         local char = player.Character or player.CharacterAdded:Wait()
         local hum = char:WaitForChild("Humanoid")
         local gui = Instance.new("ScreenGui")
         local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(0,200,0,80)
-        frame.Position = UDim2.new(1,-210,0,10)
-        frame.BackgroundColor3 = Color3.fromRGB(30,30,30)
+        frame.Size = UDim2.new(0,220,0,100)
+        frame.Position = UDim2.new(1,-230,0,50)
+        frame.BackgroundColor3 = Color3.fromRGB(25,25,45)
         frame.BackgroundTransparency = 0.1
         frame.Active = true
         frame.Draggable = true
         frame.Parent = gui
         gui.Parent = game:GetService("CoreGui")
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0,10)
+        corner.Parent = frame
         local label = Instance.new("TextLabel")
         label.Size = UDim2.new(1,0,0,30)
         label.Text = "Speed Boost: OFF"
@@ -781,22 +804,22 @@ addApeiroButton("⚡ Speed Boost (GUI Slider)", function()
         local enabled = false
         local sliderBg = Instance.new("Frame")
         sliderBg.Size = UDim2.new(0,180,0,4)
-        sliderBg.Position = UDim2.new(0,10,0,50)
+        sliderBg.Position = UDim2.new(0,20,0,55)
         sliderBg.BackgroundColor3 = Color3.fromRGB(100,100,100)
         sliderBg.Parent = frame
         local bar = Instance.new("Frame")
         bar.Size = UDim2.new(0.5,0,1,0)
-        bar.BackgroundColor3 = Color3.fromRGB(0,255,0)
+        bar.BackgroundColor3 = Color3.fromRGB(0,200,255)
         bar.Parent = sliderBg
         local handle = Instance.new("TextButton")
-        handle.Size = UDim2.new(0,10,0,10)
-        handle.Position = UDim2.new(0.5,-5,0,-3)
+        handle.Size = UDim2.new(0,12,0,12)
+        handle.Position = UDim2.new(0.5,-6,0,-4)
         handle.Text = ""
         handle.BackgroundColor3 = Color3.fromRGB(255,255,255)
         handle.Parent = bar
         local valLabel = Instance.new("TextLabel")
         valLabel.Size = UDim2.new(1,0,0,20)
-        valLabel.Position = UDim2.new(0,0,0,60)
+        valLabel.Position = UDim2.new(0,0,1,-25)
         valLabel.Text = "Speed: 16"
         valLabel.TextColor3 = Color3.fromRGB(200,200,200)
         valLabel.BackgroundTransparency = 1
@@ -809,7 +832,7 @@ addApeiroButton("⚡ Speed Boost (GUI Slider)", function()
                 local pos = (i.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
                 pos = math.clamp(pos,0,1)
                 bar.Size = UDim2.new(pos,0,1,0)
-                handle.Position = UDim2.new(pos,-5,0,-3)
+                handle.Position = UDim2.new(pos,-6,0,-4)
                 speed = math.floor(16 + pos * 84)
                 valLabel.Text = "Speed: " .. speed
                 if enabled then hum.WalkSpeed = speed end
@@ -837,7 +860,7 @@ addApeiroButton("⚡ Speed Boost (GUI Slider)", function()
     ]])()
 end)
 
-addApeiroButton("🌀 Teleport to Exit", function()
+addButton(apeiroPanel, "🌀 Teleport to Exit", function()
     loadstring([[
         local player = game.Players.LocalPlayer
         local char = player.Character
@@ -860,7 +883,7 @@ addApeiroButton("🌀 Teleport to Exit", function()
     ]])()
 end)
 
-addApeiroButton("🔮 Full ESP (Entities/Items/Exit)", function()
+addButton(apeiroPanel, "🔮 Full ESP (Entities/Items/Exit)", function()
     loadstring([[
         local rs = game:GetService("RunService")
         local function add(obj, color, text)
@@ -905,27 +928,22 @@ addApeiroButton("🔮 Full ESP (Entities/Items/Exit)", function()
     ]])()
 end)
 
--- Tab switching
-local scriptsBtn = createTabButton("🚀 Scripts", Color3.fromRGB(0, 150, 200), function()
+-- Tab switching callbacks
+scriptsBtn.MouseButton1Click:Connect(function()
     scriptsPanel.Visible = true
-    mm2Panel.Visible = false
+    apeiroPanel.Visible = false
     scriptsBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
-    mm2Btn.BackgroundColor3 = Color3.fromRGB(30,30,60)
+    apeiroBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
 end)
-local mm2Btn = createTabButton("🌌 Apeirophobia", Color3.fromRGB(30,30,60), function()
+apeiroBtn.MouseButton1Click:Connect(function()
     scriptsPanel.Visible = false
-    mm2Panel.Visible = true
-    mm2Btn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
-    scriptsBtn.BackgroundColor3 = Color3.fromRGB(30,30,60)
+    apeiroPanel.Visible = true
+    apeiroBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
+    scriptsBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
 end)
--- position buttons side by side by adjusting size
-scriptsBtn.Size = UDim2.new(0.5, -2, 1, -4)
-mm2Btn.Size = UDim2.new(0.5, -2, 1, -4)
-mm2Btn.Position = UDim2.new(0.5, 2, 0, 2)
-tabContainer.Visible = true
 
--- Initial panel visibility
+-- Ensure panels have correct initial visibility
 scriptsPanel.Visible = true
-mm2Panel.Visible = false
+apeiroPanel.Visible = false
 
-print("Space Hub loaded successfully!")
+print("✨ Space Hub loaded – Modern GUI with in‑window animated stars")
