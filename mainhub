@@ -1,20 +1,3 @@
---[[
-███████╗██████╗  █████╗  ██████╗███████╗██╗  ██╗██╗   ██╗██████╗
-██╔════╝██╔══██╗██╔══██╗██╔════╝██╔════╝██║  ██║██║   ██║██╔══██╗
-███████╗██████╔╝███████║██║     █████╗  ███████║██║   ██║██████╔╝
-╚════██║██╔═══╝ ██╔══██║██║     ██╔══╝  ██╔══██║██║   ██║██╔══██╗
-███████║██║     ██║  ██║╚██████╗███████╗██║  ██║╚██████╔╝██████╔╝
-╚══════╝╚═╝     ╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝
-
-██╗   ██╗ ██╗    ██████╗      ██████╗
-██║   ██║███║   ██╔═████╗    ██╔═████╗
-██║   ██║╚██║   ██║██╔██║    ██║██╔██║
-╚██╗ ██╔╝ ██║   ████╔╝██║    ████╔╝██║
- ╚████╔╝  ██║██╗╚██████╔╝██╗╚██████╔╝
-  ╚═══╝   ╚═╝╚═╝ ╚═════╝ ╚═╝ ╚═════╝
---]]
-
-
 --[ Space Hub - Modern GUI with Animated Starfield & ERLC Tab ]--
 -- Services
 local Players = game:GetService("Players")
@@ -361,7 +344,7 @@ function InitializeHub()
         end
     end)
 
-    -- Tab buttons (4 tabs)
+    -- Tab buttons (5 tabs)
     local tabContainer = Instance.new("Frame")
     tabContainer.Size = UDim2.new(1, 0, 0, 45)
     tabContainer.Position = UDim2.new(0, 0, 0, 40)
@@ -370,13 +353,13 @@ function InitializeHub()
 
     local function createTabButton(name, inactiveColor, callback)
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(0.25, -4, 1, -6)
+        btn.Size = UDim2.new(0.2, -4, 1, -6)
         btn.Text = name
         btn.BackgroundColor3 = inactiveColor
         btn.BackgroundTransparency = 0.4
         btn.TextColor3 = Color3.fromRGB(220, 220, 255)
         btn.Font = Enum.Font.GothamSemibold
-        btn.TextSize = 14
+        btn.TextSize = 13
         btn.BorderSizePixel = 0
         btn.Parent = tabContainer
         local btnCorner = Instance.new("UICorner")
@@ -387,14 +370,16 @@ function InitializeHub()
     end
 
     local scriptsBtn = createTabButton("🚀 SCRIPTS", Color3.fromRGB(30, 30, 55), nil)
-    local apeiroBtn = createTabButton("🌌 APEIROPHOBIA", Color3.fromRGB(30, 30, 55), nil)
+    local apeiroBtn = createTabButton("🌌 APEIRO", Color3.fromRGB(30, 30, 55), nil)
     local erlcBtn = createTabButton("🚔 ERLC", Color3.fromRGB(30, 30, 55), nil)
     local jbBtn = createTabButton("🔧 JB", Color3.fromRGB(30, 30, 55), nil)
+    local inkBtn = createTabButton("🖋️ INK", Color3.fromRGB(30, 30, 55), nil)
 
     scriptsBtn.Position = UDim2.new(0, 2, 0, 2)
-    apeiroBtn.Position = UDim2.new(0.25, 2, 0, 2)
-    erlcBtn.Position = UDim2.new(0.5, 2, 0, 2)
-    jbBtn.Position = UDim2.new(0.75, 2, 0, 2)
+    apeiroBtn.Position = UDim2.new(0.2, 2, 0, 2)
+    erlcBtn.Position = UDim2.new(0.4, 2, 0, 2)
+    jbBtn.Position = UDim2.new(0.6, 2, 0, 2)
+    inkBtn.Position = UDim2.new(0.8, 2, 0, 2)
 
     -- Content panels
     local function createContentPanel()
@@ -423,9 +408,11 @@ function InitializeHub()
     local apeiroPanel = createContentPanel()
     local erlcPanel = createContentPanel()
     local jbPanel = createContentPanel()
+    local inkPanel = createContentPanel()
     apeiroPanel.Visible = false
     erlcPanel.Visible = false
     jbPanel.Visible = false
+    inkPanel.Visible = false
 
     -- Button styles
     local function addButton(panel, text, callback)
@@ -512,7 +499,7 @@ function InitializeHub()
         header.Parent = panel
     end
 
-    -- ========== SCRIPTS TAB (unchanged) ==========
+    -- ========== SCRIPTS TAB ==========
     addSectionHeader(scriptsPanel, "✈️ FLY SCRIPTS")
     addButton(scriptsPanel, "🕊️ Simple Fly (X to toggle)", function()
         loadstring([[
@@ -759,7 +746,7 @@ function InitializeHub()
         ]])()
     end)
 
-    -- ========== APEIROPHOBIA TAB (unchanged) ==========
+    -- ========== APEIROPHOBIA TAB ==========
     addSectionHeader(apeiroPanel, "🏃 STAMINA & MOVEMENT")
     addButton(apeiroPanel, "🏃 Infinite Stamina", function()
         loadstring([[
@@ -1050,7 +1037,7 @@ function InitializeHub()
         ]])()
     end)
 
-    -- ========== ERLC TAB (unchanged) ==========
+    -- ========== ERLC TAB ==========
     addSectionHeader(erlcPanel, "🚗 CAR SCRIPTS")
     addButton(erlcPanel, "🏎️ Car Fly (V to toggle)", function()
         loadstring([[
@@ -1142,10 +1129,8 @@ function InitializeHub()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/Emerson2-creator/Scripts-Roblox/refs/heads/main/ScriptR6/AnimGuiV2.lua"))()
     end)
 
-    -- ========== JB TAB (JAILBREAK) ==========
+    -- ========== JB TAB (JAILBREAK) - UNCHANGED ==========
     addSectionHeader(jbPanel, "🚗 JAILBREAK CAR SPEED")
-
-    -- Car Speed Slider (UNCHANGED)
     addButton(jbPanel, "⚡ Car Speed Slider", function()
         local gui = Instance.new("ScreenGui")
         gui.Name = "JBCarSpeed"
@@ -1330,24 +1315,19 @@ function InitializeHub()
         end
     end)
 
-    -- ========== NEW JB SCRIPTS ==========
+    -- ========== JB SCRIPTS (unchanged) ==========
     addSectionHeader(jbPanel, "🔧 JB ESSENTIALS")
-
-    -- Infinite Boost (Inf Nitro)
     addButton(jbPanel, "⛽ Infinite Boost (Nitro)", function()
         loadstring([[
             local rs = game:GetService("RunService")
             local uis = game:GetService("UserInputService")
             local player = game:GetService("Players").LocalPlayer
-
             local infBoostEnabled = false
             local function applyBoost(vehicle)
-                -- Try to find and modify the nitro/boost value
                 local nitroVal = vehicle:FindFirstChild("Nitro") or vehicle:FindFirstChild("Boost") or vehicle:FindFirstChild("Fuel")
                 if nitroVal and nitroVal:IsA("NumberValue") then
                     nitroVal.Value = 100
                 end
-                -- Also check engine for fuel
                 if vehicle:FindFirstChild("Engine") then
                     local engine = vehicle.Engine
                     local fuel = engine:FindFirstChild("Fuel") or engine:FindFirstChild("NitroValue")
@@ -1356,14 +1336,12 @@ function InitializeHub()
                     end
                 end
             end
-
             local function checkVehicles()
                 if not infBoostEnabled then return end
                 local vehiclesFolder = workspace:FindFirstChild("Vehicles")
                 if not vehiclesFolder then return end
                 for _, vehicle in ipairs(vehiclesFolder:GetChildren()) do
                     if vehicle:IsA("Model") then
-                        -- Check if player is in this vehicle
                         local seat = vehicle:FindFirstChild("Seat") or vehicle:FindFirstChild("VehicleSeat")
                         if seat then
                             local occupant = seat:FindFirstChild("Occupant") or seat:FindFirstChild("PlayerName")
@@ -1377,8 +1355,6 @@ function InitializeHub()
                     end
                 end
             end
-
-            -- Toggle with K key
             uis.InputBegan:Connect(function(input)
                 if input.KeyCode == Enum.KeyCode.K then
                     infBoostEnabled = not infBoostEnabled
@@ -1392,8 +1368,6 @@ function InitializeHub()
                     end
                 end
             end)
-
-            -- Start checking on script load
             infBoostEnabled = true
             rs.RenderStepped:Connect(checkVehicles)
             game:GetService("StarterGui"):SetCore("SendNotification", {
@@ -1404,7 +1378,6 @@ function InitializeHub()
         ]])()
     end)
 
-    -- Silent Aimbot
     addButton(jbPanel, "🎯 Silent Aimbot (Right Click)", function()
         loadstring([[
             local players = game:GetService("Players")
@@ -1412,23 +1385,18 @@ function InitializeHub()
             local rs = game:GetService("RunService")
             local cam = workspace.CurrentCamera
             local lp = players.LocalPlayer
-            local mouse = lp:GetMouse()
-
             local aimbotEnabled = false
             local fovRadius = 200
             local teamCheck = true
-
             local function getClosestPlayer()
                 local closest = nil
                 local shortestDistance = fovRadius
                 local mousePos = uis:GetMouseLocation()
-
                 for _, plr in ipairs(players:GetPlayers()) do
                     if plr ~= lp and plr.Character then
                         local head = plr.Character:FindFirstChild("Head")
                         local humanoid = plr.Character:FindFirstChild("Humanoid")
                         if head and humanoid and humanoid.Health > 0 then
-                            -- Team check (skip teammates)
                             if teamCheck then
                                 local lpTeam = lp.Team
                                 local plrTeam = plr.Team
@@ -1449,7 +1417,6 @@ function InitializeHub()
                 end
                 return closest
             end
-
             rs.RenderStepped:Connect(function()
                 if aimbotEnabled and uis:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
                     local target = getClosestPlayer()
@@ -1458,7 +1425,6 @@ function InitializeHub()
                     end
                 end
             end)
-
             uis.InputBegan:Connect(function(input)
                 if input.KeyCode == Enum.KeyCode.L then
                     aimbotEnabled = not aimbotEnabled
@@ -1469,7 +1435,6 @@ function InitializeHub()
                     })
                 end
             end)
-
             aimbotEnabled = true
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Aimbot",
@@ -1479,22 +1444,18 @@ function InitializeHub()
         ]])()
     end)
 
-    -- Player ESP
     addButton(jbPanel, "👁️ Player ESP (Jailbreak)", function()
         loadstring([[
             local players = game:GetService("Players")
             local rs = game:GetService("RunService")
             local lp = players.LocalPlayer
             local espObjects = {}
-
             local function createESP(plr)
                 if plr == lp then return end
                 local function setup(char)
                     local head = char:WaitForChild("Head", 5)
                     local humanoid = char:FindFirstChild("Humanoid")
                     if not head or not humanoid then return end
-
-                    -- Box highlight
                     local highlight = Instance.new("Highlight")
                     highlight.Name = "JB_ESP"
                     highlight.FillColor = Color3.fromRGB(255, 0, 0)
@@ -1502,8 +1463,6 @@ function InitializeHub()
                     highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
                     highlight.OutlineTransparency = 0.3
                     highlight.Parent = char
-
-                    -- Billboard name
                     local bill = Instance.new("BillboardGui")
                     bill.Name = "JB_ESP_Label"
                     bill.Size = UDim2.new(0, 200, 0, 40)
@@ -1517,14 +1476,11 @@ function InitializeHub()
                     label.TextStrokeTransparency = 0.5
                     label.Text = plr.Name .. " [" .. math.floor(humanoid.Health) .. " HP]"
                     label.Parent = bill
-
-                    -- Update HP
                     rs.RenderStepped:Connect(function()
                         if label and label.Parent and humanoid then
                             label.Text = plr.Name .. " [" .. math.floor(humanoid.Health) .. " HP]"
                         end
                     end)
-
                     if espObjects[plr] then
                         for _, obj in ipairs(espObjects[plr]) do
                             if obj and obj.Parent then obj:Destroy() end
@@ -1532,13 +1488,11 @@ function InitializeHub()
                     end
                     espObjects[plr] = {highlight, bill}
                 end
-
                 if plr.Character then
                     setup(plr.Character)
                 end
                 plr.CharacterAdded:Connect(setup)
             end
-
             for _, plr in ipairs(players:GetPlayers()) do
                 createESP(plr)
             end
@@ -1551,7 +1505,6 @@ function InitializeHub()
                     espObjects[plr] = nil
                 end
             end)
-
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Player ESP",
                 Text = "All players highlighted",
@@ -1561,15 +1514,11 @@ function InitializeHub()
     end)
 
     addSectionHeader(jbPanel, "💰 AUTO FARM")
-
-    -- Auto Rob
     addButton(jbPanel, "💵 Auto Rob (Stores & Banks)", function()
         loadstring([[
             local player = game:GetService("Players").LocalPlayer
             local uis = game:GetService("UserInputService")
             local rs = game:GetService("RunService")
-
-            -- Known robbery locations in Jailbreak (CFrame positions)
             local robberyLocations = {
                 {name = "Bank", pos = Vector3.new(22, 4, 13)},
                 {name = "Jewelry Store", pos = Vector3.new(-114, 4, -92)},
@@ -1582,25 +1531,19 @@ function InitializeHub()
                 {name = "Donut Shop", pos = Vector3.new(-50, 4, -50)},
                 {name = "Garage", pos = Vector3.new(300, 4, -200)},
             }
-
             local currentIndex = 1
             local autoRobEnabled = false
-
             local function teleportTo(pos)
                 local char = player.Character
                 if char and char:FindFirstChild("HumanoidRootPart") then
                     char.HumanoidRootPart.CFrame = CFrame.new(pos)
                 end
             end
-
             local function tryRob()
-                -- Fire proximity prompts in range
                 local char = player.Character
                 if not char then return end
                 local root = char:FindFirstChild("HumanoidRootPart")
                 if not root then return end
-
-                -- Look for proximity prompts or clickable objects
                 for _, obj in ipairs(workspace:GetDescendants()) do
                     if obj:IsA("ProximityPrompt") then
                         local distance = (obj.Parent.Position - root.Position).Magnitude
@@ -1610,7 +1553,6 @@ function InitializeHub()
                     end
                 end
             end
-
             rs.Heartbeat:Connect(function()
                 if not autoRobEnabled then return end
                 local loc = robberyLocations[currentIndex]
@@ -1625,7 +1567,6 @@ function InitializeHub()
                     end
                 end
             end)
-
             uis.InputBegan:Connect(function(input)
                 if input.KeyCode == Enum.KeyCode.P then
                     autoRobEnabled = not autoRobEnabled
@@ -1636,7 +1577,6 @@ function InitializeHub()
                     })
                 end
             end)
-
             autoRobEnabled = true
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Auto Rob",
@@ -1646,16 +1586,13 @@ function InitializeHub()
         ]])()
     end)
 
-    -- Auto Arrest
     addButton(jbPanel, "👮 Auto Arrest", function()
         loadstring([[
             local players = game:GetService("Players")
             local uis = game:GetService("UserInputService")
             local rs = game:GetService("RunService")
             local lp = players.LocalPlayer
-
             local autoArrestEnabled = false
-
             rs.Heartbeat:Connect(function()
                 if not autoArrestEnabled then return end
                 for _, plr in ipairs(players:GetPlayers()) do
@@ -1663,11 +1600,9 @@ function InitializeHub()
                         local targetRoot = plr.Character.HumanoidRootPart
                         local lpRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
                         if lpRoot then
-                            -- Teleport near target
                             local offset = (targetRoot.Position - lpRoot.Position).Unit * 5
                             lpRoot.CFrame = CFrame.new(targetRoot.Position - offset)
                             task.wait(0.1)
-                            -- Try to arrest via handcuffs/taser
                             local tools = lp.Backpack:GetChildren()
                             for _, tool in ipairs(tools) do
                                 if tool.Name:lower():find("handcuff") or tool.Name:lower():find("taser") or tool.Name:lower():find("cuff") then
@@ -1682,7 +1617,6 @@ function InitializeHub()
                     end
                 end
             end)
-
             uis.InputBegan:Connect(function(input)
                 if input.KeyCode == Enum.KeyCode.Y then
                     autoArrestEnabled = not autoArrestEnabled
@@ -1693,7 +1627,6 @@ function InitializeHub()
                     })
                 end
             end)
-
             autoArrestEnabled = true
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Auto Arrest",
@@ -1710,35 +1643,30 @@ function InitializeHub()
             char.HumanoidRootPart.CFrame = CFrame.new(22, 4, 13)
         end
     end)
-
     addButton(jbPanel, "💎 Teleport to Jewelry Store", function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(-114, 4, -92)
         end
     end)
-
     addButton(jbPanel, "🏛️ Teleport to Museum", function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(109, 4, 124)
         end
     end)
-
     addButton(jbPanel, "🔫 Teleport to Gun Shop", function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(-300, 4, -300)
         end
     end)
-
     addButton(jbPanel, "🚁 Teleport to Helipad", function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(400, 100, -400)
         end
     end)
-
     addButton(jbPanel, "🏢 Teleport to Police HQ", function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
@@ -1751,25 +1679,21 @@ function InitializeHub()
         loadstring([[
             local rs = game:GetService("RunService")
             local lp = game:GetService("Players").LocalPlayer
-
             local function killGuards()
                 local char = lp.Character
                 if not char then return end
                 local root = char:FindFirstChild("HumanoidRootPart")
                 if not root then return end
-
                 for _, obj in ipairs(workspace:GetDescendants()) do
                     if obj:IsA("Model") and obj:FindFirstChild("Humanoid") then
                         local humanoid = obj.Humanoid
                         local nameLower = obj.Name:lower()
                         if nameLower:find("guard") or nameLower:find("police") or nameLower:find("cop") or nameLower:find("security") then
                             if humanoid.Health > 0 then
-                                -- Try to damage via tools
                                 local tools = lp.Backpack:GetChildren()
                                 for _, tool in ipairs(tools) do
                                     if tool:IsA("Tool") then
                                         tool.Parent = lp.Character
-                                        -- Position near guard
                                         local guardRoot = obj:FindFirstChild("HumanoidRootPart")
                                         if guardRoot then
                                             root.CFrame = CFrame.new(guardRoot.Position + Vector3.new(0, 2, 0))
@@ -1784,7 +1708,6 @@ function InitializeHub()
                     end
                 end
             end
-
             killGuards()
             game:GetService("StarterGui"):SetCore("SendNotification", {
                 Title = "Kill Guards",
@@ -1799,7 +1722,6 @@ function InitializeHub()
             local lp = game:GetService("Players").LocalPlayer
             local itemsFolder = workspace:FindFirstChild("Items") or workspace:FindFirstChild("ItemSpawns")
             if not itemsFolder then
-                -- Try to find guns directly
                 for _, obj in ipairs(workspace:GetDescendants()) do
                     if obj:IsA("Tool") then
                         local clone = obj:Clone()
@@ -1822,52 +1744,742 @@ function InitializeHub()
         ]])()
     end)
 
+    -- ============================================================
+    -- ========== INK TAB (INK GAME / SQUID GAME) ==========
+    -- ============================================================
+    addSectionHeader(inkPanel, "🎯 GAME MODES")
+    addButton(inkPanel, "🏆 Instant Win (RLGL)", function()
+        -- Teleports past the RLGL finish line by finding guard/tree trigger
+        loadstring([[
+            local ws = game:GetService("Workspace")
+            local lp = game:GetService("Players").LocalPlayer
+            local char = lp.Character or lp.CharacterAdded:Wait()
+            local root = char:WaitForChild("HumanoidRootPart")
+            -- Try to find the RLGL finish zone / tree / crossedover
+            local rlgl = ws:FindFirstChild("RedLightGreenLight")
+            if rlgl then
+                local finish = rlgl:FindFirstChild("finish") or rlgl:FindFirstChild("crossedover")
+                if not finish then
+                    for _, v in ipairs(rlgl:GetDescendants()) do
+                        if v:IsA("BasePart") and (v.Name:lower():find("finish") or v.Name:lower():find("cross") or v.Name:lower():find("tree")) then
+                            finish = v
+                            break
+                        end
+                    end
+                end
+                if finish then
+                    root.CFrame = CFrame.new(finish.Position + Vector3.new(0,5,0))
+                end
+            end
+            -- Fallback: fire all nearby proximity prompts
+            for _, obj in ipairs(ws:GetDescendants()) do
+                if obj:IsA("ProximityPrompt") then
+                    local dist = (obj.Parent.Position - root.Position).Magnitude
+                    if dist < 20 then
+                        pcall(function() fireproximityprompt(obj) end)
+                    end
+                end
+            end
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Instant Win",
+                Text = "RLGL completed!",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "🍪 Auto Dalgona (Crack Shape)", function()
+        -- Rapid-fire hold/release on the cookie to auto-crack the shape
+        loadstring([[
+            local ws = game:GetService("Workspace")
+            local uis = game:GetService("UserInputService")
+            local rs = game:GetService("RunService")
+            local lp = game:GetService("Players").LocalPlayer
+            local enabled = false
+            local function crack()
+                local char = lp.Character
+                if not char then return end
+                for _, obj in ipairs(ws:GetDescendants()) do
+                    if obj:IsA("ProximityPrompt") and obj.ActionText and obj.ActionText:lower():find("hold") then
+                        pcall(function()
+                            obj:InputHoldBegin()
+                            task.wait(0.05)
+                            obj:InputHoldEnd()
+                        end)
+                    end
+                end
+            end
+            rs.Heartbeat:Connect(function()
+                if enabled then crack() end
+            end)
+            uis.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.H then
+                    enabled = not enabled
+                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                        Title = "Auto Dalgona",
+                        Text = enabled and "ON - Press H to toggle" or "OFF",
+                        Duration = 3
+                    })
+                end
+            end)
+            enabled = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Auto Dalgona",
+                Text = "ON - Press H to toggle",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "🪢 Tug of War - Auto Pull", function()
+        -- Rapid presses the pull button in tug of war
+        loadstring([[
+            local ws = game:GetService("Workspace")
+            local uis = game:GetService("UserInputService")
+            local rs = game:GetService("RunService")
+            local lp = game:GetService("Players").LocalPlayer
+            local enabled = false
+            local function autoPull()
+                for _, obj in ipairs(ws:GetDescendants()) do
+                    if obj:IsA("ProximityPrompt") then
+                        local prompt = obj
+                        pcall(function()
+                            fireproximityprompt(prompt)
+                        end)
+                    end
+                end
+                -- Also simulate repeated button presses
+                pcall(function()
+                    mouse1press()
+                    task.wait(0.02)
+                    mouse1release()
+                end)
+            end
+            rs.Heartbeat:Connect(function()
+                if enabled then autoPull() end
+            end)
+            uis.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.U then
+                    enabled = not enabled
+                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                        Title = "Auto Pull",
+                        Text = enabled and "ON - Press U to toggle" or "OFF",
+                        Duration = 3
+                    })
+                end
+            end)
+            enabled = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Auto Pull",
+                Text = "ON - Press U to toggle",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addSectionHeader(inkPanel, "🔍 ESP & VISUALS")
+
+    addButton(inkPanel, "🪟 Glass Bridge ESP (Safe Tiles)", function()
+        -- Highlights safe (green) and breakable (red) glass tiles
+        loadstring([[
+            local rs = game:GetService("RunService")
+            local ws = game:GetService("Workspace")
+            local function highlightGlass()
+                for _, obj in ipairs(ws:GetDescendants()) do
+                    if obj:IsA("BasePart") and obj.Transparency > 0.2 and obj.Transparency < 0.9 then
+                        local name = obj.Name:lower()
+                        if name:find("glass") or name:find("tile") or name:find("platform") or name:find("step") then
+                            if not obj:FindFirstChild("GlassESP") then
+                                local hl = Instance.new("Highlight")
+                                hl.Name = "GlassESP"
+                                hl.FillTransparency = 0.4
+                                hl.Parent = obj
+                                -- Try to determine safe vs. breakable by looking for "break" or "fake" in parent names
+                                local parentName = obj.Parent and obj.Parent.Name:lower() or ""
+                                if parentName:find("break") or parentName:find("fake") or parentName:find("bad") then
+                                    hl.FillColor = Color3.fromRGB(255, 0, 0)
+                                else
+                                    hl.FillColor = Color3.fromRGB(0, 255, 0)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            rs.RenderStepped:Connect(highlightGlass)
+            workspace.DescendantAdded:Connect(highlightGlass)
+            -- Also try to color all glass based on CanCollide (not a perfect heuristic but helpful)
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Glass Bridge ESP",
+                Text = "Glass tiles highlighted - Green=safe, Red=breakable",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "👤 Full Player ESP (Ink)", function()
+        -- ESP with HP, distance, role labels
+        loadstring([[
+            local players = game:GetService("Players")
+            local rs = game:GetService("RunService")
+            local lp = players.LocalPlayer
+            local espObjects = {}
+            local function createESP(plr)
+                if plr == lp then return end
+                local function setup(char)
+                    local head = char:WaitForChild("Head", 5)
+                    local hum = char:FindFirstChild("Humanoid")
+                    if not head or not hum then return end
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "INK_ESP"
+                    hl.FillColor = Color3.fromRGB(255, 100, 0)
+                    hl.FillTransparency = 0.4
+                    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                    hl.OutlineTransparency = 0.3
+                    hl.Parent = char
+                    local bill = Instance.new("BillboardGui")
+                    bill.Name = "INK_ESP_LBL"
+                    bill.Size = UDim2.new(0, 250, 0, 50)
+                    bill.StudsOffset = Vector3.new(0, 3.5, 0)
+                    bill.AlwaysOnTop = true
+                    bill.Parent = head
+                    local lab = Instance.new("TextLabel")
+                    lab.Size = UDim2.new(1, 0, 1, 0)
+                    lab.BackgroundTransparency = 1
+                    lab.TextColor3 = Color3.fromRGB(255, 255, 255)
+                    lab.TextStrokeTransparency = 0.4
+                    lab.Text = plr.Name
+                    lab.Parent = bill
+                    local distLabel = Instance.new("TextLabel")
+                    distLabel.Size = UDim2.new(1, 0, 0, 16)
+                    distLabel.Position = UDim2.new(0, 0, 1, 0)
+                    distLabel.BackgroundTransparency = 1
+                    distLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+                    distLabel.TextSize = 12
+                    distLabel.Text = ""
+                    distLabel.Parent = bill
+                    rs.RenderStepped:Connect(function()
+                        if lab and lab.Parent and hum then
+                            lab.Text = plr.Name .. " [" .. math.floor(hum.Health) .. " HP]"
+                            if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("HumanoidRootPart") then
+                                local dist = (lp.Character.HumanoidRootPart.Position - char.HumanoidRootPart.Position).Magnitude
+                                distLabel.Text = math.floor(dist) .. "m"
+                            end
+                        end
+                    end)
+                    if espObjects[plr] then
+                        for _, o in ipairs(espObjects[plr]) do
+                            if o and o.Parent then o:Destroy() end
+                        end
+                    end
+                    espObjects[plr] = {hl, bill}
+                end
+                if plr.Character then setup(plr.Character) end
+                plr.CharacterAdded:Connect(setup)
+            end
+            for _, p in ipairs(players:GetPlayers()) do createESP(p) end
+            players.PlayerAdded:Connect(createESP)
+            players.PlayerRemoving:Connect(function(p)
+                if espObjects[p] then
+                    for _, o in ipairs(espObjects[p]) do
+                        if o and o.Parent then o:Destroy() end
+                    end
+                    espObjects[p] = nil
+                end
+            end)
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Player ESP",
+                Text = "All players highlighted with HP & distance",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "🫥 Hiders ESP (Seek Mode)", function()
+        -- Highlights hiders through walls in hide & seek
+        loadstring([[
+            local rs = game:GetService("RunService")
+            local ws = game:GetService("Workspace")
+            local function findHiders()
+                for _, obj in ipairs(ws:GetDescendants()) do
+                    if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("Head") then
+                        local n = obj.Name:lower()
+                        if n:find("hider") or n:find("player") then
+                            if not obj:FindFirstChild("HiderESP") then
+                                local hl = Instance.new("Highlight")
+                                hl.Name = "HiderESP"
+                                hl.FillColor = Color3.fromRGB(255, 0, 255)
+                                hl.FillTransparency = 0.3
+                                hl.Parent = obj
+                            end
+                        end
+                    end
+                end
+            end
+            rs.RenderStepped:Connect(findHiders)
+            workspace.DescendantAdded:Connect(findHiders)
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Hiders ESP",
+                Text = "Hiders highlighted in magenta",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "🔑 Key & Door ESP", function()
+        -- Highlights keys and exit doors
+        loadstring([[
+            local rs = game:GetService("RunService")
+            local ws = game:GetService("Workspace")
+            local function scan()
+                for _, obj in ipairs(ws:GetDescendants()) do
+                    if obj:IsA("BasePart") or obj:IsA("Model") then
+                        local n = obj.Name:lower()
+                        if n:find("key") or n:find("token") then
+                            if not obj:FindFirstChild("KeyESP") then
+                                local hl = Instance.new("Highlight")
+                                hl.Name = "KeyESP"
+                                hl.FillColor = Color3.fromRGB(255, 215, 0)
+                                hl.FillTransparency = 0.3
+                                hl.Parent = obj
+                            end
+                        elseif n:find("door") or n:find("exit") or n:find("gate") then
+                            if not obj:FindFirstChild("DoorESP") then
+                                local hl = Instance.new("Highlight")
+                                hl.Name = "DoorESP"
+                                hl.FillColor = Color3.fromRGB(0, 255, 255)
+                                hl.FillTransparency = 0.3
+                                hl.Parent = obj
+                            end
+                        end
+                    end
+                end
+            end
+            rs.RenderStepped:Connect(scan)
+            workspace.DescendantAdded:Connect(scan)
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Key & Door ESP",
+                Text = "Keys=Gold, Doors=Cyan",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addSectionHeader(inkPanel, "⚡ MOVEMENT")
+    addButton(inkPanel, "🏃 Speed Boost (Ink)", function()
+        -- Sets character speed in Ink Game
+        loadstring([[
+            local lp = game:GetService("Players").LocalPlayer
+            local rs = game:GetService("RunService")
+            local speed = 40
+            local function applySpeed(char)
+                local hum = char:WaitForChild("Humanoid")
+                hum.WalkSpeed = speed
+            end
+            if lp.Character then applySpeed(lp.Character) end
+            lp.CharacterAdded:Connect(applySpeed)
+            -- Also scan for any character speed values the game might use
+            rs.Heartbeat:Connect(function()
+                local char = lp.Character
+                if char then
+                    local hum = char:FindFirstChild("Humanoid")
+                    if hum and hum.WalkSpeed ~= speed then
+                        hum.WalkSpeed = speed
+                    end
+                end
+            end)
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Speed Boost",
+                Text = "Walk speed set to 40!",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "🦘 Infinite Jump (Ink)", function()
+        -- Allows jumping repeatedly without cooldown
+        loadstring([[
+            local uis = game:GetService("UserInputService")
+            local lp = game:GetService("Players").LocalPlayer
+            local enabled = false
+            uis.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.G then
+                    enabled = not enabled
+                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                        Title = "Infinite Jump",
+                        Text = enabled and "ON - Press G to toggle" or "OFF",
+                        Duration = 3
+                    })
+                end
+            end)
+            uis.JumpRequest:Connect(function()
+                if not enabled then return end
+                local char = lp.Character
+                if char and char:FindFirstChild("Humanoid") then
+                    char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+            enabled = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Infinite Jump",
+                Text = "ON - Press G to toggle",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "👻 Noclip (Ink Game)", function()
+        -- Noclip specific for Ink Game environments
+        loadstring([[
+            local rs = game:GetService("RunService")
+            local uis = game:GetService("UserInputService")
+            local lp = game:GetService("Players").LocalPlayer
+            local enabled = false
+            local function noclip()
+                if not enabled then return end
+                local char = lp.Character
+                if not char then return end
+                for _, part in ipairs(char:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+            rs.Stepped:Connect(noclip)
+            uis.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.M then
+                    enabled = not enabled
+                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                        Title = "Noclip",
+                        Text = enabled and "ON - Press M to toggle" or "OFF",
+                        Duration = 3
+                    })
+                    if not enabled then
+                        local char = lp.Character
+                        if char then
+                            for _, part in ipairs(char:GetDescendants()) do
+                                if part:IsA("BasePart") then part.CanCollide = true end
+                            end
+                        end
+                    end
+                end
+            end)
+            enabled = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Noclip",
+                Text = "ON - Press M to toggle",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "✈️ Fly Mode (Ink)", function()
+        -- Simple fly with WASD controls
+        loadstring([[
+            local plr = game:GetService("Players").LocalPlayer
+            local char = plr.Character or plr.CharacterAdded:Wait()
+            local root = char:WaitForChild("HumanoidRootPart")
+            local flying = false
+            local speed = 60
+            local UIS = game:GetService("UserInputService")
+            local RS = game:GetService("RunService")
+            local bv = Instance.new("BodyVelocity")
+            local bg = Instance.new("BodyGyro")
+            local keys = {W=false,A=false,S=false,D=false,Space=false,LCtrl=false}
+            UIS.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.F then
+                    flying = not flying
+                    if flying then
+                        bv.MaxForce = Vector3.new(1e5,1e5,1e5)
+                        bg.MaxTorque = Vector3.new(1e5,1e5,1e5)
+                        bv.Parent = root
+                        bg.Parent = root
+                        char.Humanoid.PlatformStand = true
+                    else
+                        bv:Destroy()
+                        bg:Destroy()
+                        char.Humanoid.PlatformStand = false
+                    end
+                end
+                if input.KeyCode == Enum.KeyCode.W then keys.W = true end
+                if input.KeyCode == Enum.KeyCode.A then keys.A = true end
+                if input.KeyCode == Enum.KeyCode.S then keys.S = true end
+                if input.KeyCode == Enum.KeyCode.D then keys.D = true end
+                if input.KeyCode == Enum.KeyCode.Space then keys.Space = true end
+                if input.KeyCode == Enum.KeyCode.LeftControl then keys.LCtrl = true end
+            end)
+            UIS.InputEnded:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.W then keys.W = false end
+                if input.KeyCode == Enum.KeyCode.A then keys.A = false end
+                if input.KeyCode == Enum.KeyCode.S then keys.S = false end
+                if input.KeyCode == Enum.KeyCode.D then keys.D = false end
+                if input.KeyCode == Enum.KeyCode.Space then keys.Space = false end
+                if input.KeyCode == Enum.KeyCode.LeftControl then keys.LCtrl = false end
+            end)
+            RS.RenderStepped:Connect(function()
+                if flying then
+                    local move = Vector3.new(0,0,0)
+                    if keys.W then move += Vector3.new(0,0,-1) end
+                    if keys.S then move += Vector3.new(0,0,1) end
+                    if keys.A then move += Vector3.new(-1,0,0) end
+                    if keys.D then move += Vector3.new(1,0,0) end
+                    if keys.Space then move += Vector3.new(0,1,0) end
+                    if keys.LCtrl then move += Vector3.new(0,-1,0) end
+                    local cam = workspace.CurrentCamera
+                    move = (cam.CFrame.RightVector * move.X + cam.CFrame.UpVector * move.Y + cam.CFrame.LookVector * move.Z) * speed
+                    bv.Velocity = move
+                    bg.CFrame = cam.CFrame
+                end
+            end)
+            game:GetService("StarterGui"):SetCore("SendNotification", {Title="Fly", Text="Press F to toggle"})
+        ]])()
+    end)
+
+    addSectionHeader(inkPanel, "⚔️ PVP & COMBAT")
+    addButton(inkPanel, "🎯 Aimbot (Ink)", function()
+        -- Silent aim that auto-rotates camera to nearest enemy
+        loadstring([[
+            local players = game:GetService("Players")
+            local uis = game:GetService("UserInputService")
+            local rs = game:GetService("RunService")
+            local cam = workspace.CurrentCamera
+            local lp = players.LocalPlayer
+            local enabled = false
+            local fov = 350
+            local function getClosest()
+                local closest, shortest = nil, fov
+                local mpos = uis:GetMouseLocation()
+                for _, p in ipairs(players:GetPlayers()) do
+                    if p ~= lp and p.Character then
+                        local head = p.Character:FindFirstChild("Head")
+                        local hum = p.Character:FindFirstChild("Humanoid")
+                        if head and hum and hum.Health > 0 then
+                            local sp, vis = cam:WorldToViewportPoint(head.Position)
+                            if vis then
+                                local d = (Vector2.new(sp.X, sp.Y) - mpos).Magnitude
+                                if d < shortest then shortest = d; closest = head end
+                            end
+                        end
+                    end
+                end
+                return closest
+            end
+            rs.RenderStepped:Connect(function()
+                if enabled and uis:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) then
+                    local t = getClosest()
+                    if t then
+                        cam.CFrame = CFrame.new(cam.CFrame.Position, t.Position)
+                    end
+                end
+            end)
+            uis.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.B then
+                    enabled = not enabled
+                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                        Title = "Aimbot",
+                        Text = enabled and "ON - Hold Right Click to aim" or "OFF",
+                        Duration = 3
+                    })
+                end
+            end)
+            enabled = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Aimbot",
+                Text = "ON - Hold Right Click | Press B to toggle",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "💀 Kill Aura (PvP)", function()
+        -- Auto-attacks nearby players during PvP modes
+        loadstring([[
+            local players = game:GetService("Players")
+            local rs = game:GetService("RunService")
+            local ws = game:GetService("Workspace")
+            local lp = players.LocalPlayer
+            local enabled = false
+            local range = 15
+            local uis = game:GetService("UserInputService")
+            rs.Heartbeat:Connect(function()
+                if not enabled then return end
+                local char = lp.Character
+                if not char then return end
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if not root then return end
+                for _, p in ipairs(players:GetPlayers()) do
+                    if p ~= lp and p.Character then
+                        local targetRoot = p.Character:FindFirstChild("HumanoidRootPart")
+                        local hum = p.Character:FindFirstChild("Humanoid")
+                        if targetRoot and hum and hum.Health > 0 then
+                            local dist = (targetRoot.Position - root.Position).Magnitude
+                            if dist < range then
+                                -- Activate any weapon tools to attack
+                                for _, tool in ipairs(char:GetChildren()) do
+                                    if tool:IsA("Tool") then
+                                        pcall(function() tool:Activate() end)
+                                    end
+                                end
+                                -- Also try backpack tools
+                                for _, tool in ipairs(lp.Backpack:GetChildren()) do
+                                    if tool:IsA("Tool") then
+                                        tool.Parent = char
+                                        pcall(function() tool:Activate() end)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            uis.InputBegan:Connect(function(input)
+                if input.KeyCode == Enum.KeyCode.R then
+                    enabled = not enabled
+                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                        Title = "Kill Aura",
+                        Text = enabled and "ON - Press R to toggle" or "OFF",
+                        Duration = 3
+                    })
+                end
+            end)
+            enabled = true
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Kill Aura",
+                Text = "ON - Auto attacking nearby players | Press R to toggle",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addSectionHeader(inkPanel, "🛡️ DEFENSE")
+    addButton(inkPanel, "🛡️ Anti-Ragdoll / No Stun", function()
+        -- Prevents ragdoll and stun effects
+        loadstring([[
+            local rs = game:GetService("RunService")
+            local lp = game:GetService("Players").LocalPlayer
+            local function antiRagdoll(char)
+                local hum = char:WaitForChild("Humanoid")
+                hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+                hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+                hum:SetStateEnabled(Enum.HumanoidStateType.Stunned, false)
+                hum:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
+                -- Override platformstand
+                hum.AutoRotate = true
+            end
+            rs.Heartbeat:Connect(function()
+                local char = lp.Character
+                if char then
+                    local hum = char:FindFirstChild("Humanoid")
+                    if hum then
+                        antiRagdoll(char)
+                    end
+                end
+            end)
+            if lp.Character then antiRagdoll(lp.Character) end
+            lp.CharacterAdded:Connect(antiRagdoll)
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Anti-Ragdoll",
+                Text = "No stun, no fall damage, no ragdoll!",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addButton(inkPanel, "💚 Anti-Break Glass", function()
+        -- Prevents you from breaking glass tiles when stepping on them
+        loadstring([[
+            local rs = game:GetService("RunService")
+            local lp = game:GetService("Players").LocalPlayer
+            local function anchorNearbyGlass()
+                local char = lp.Character
+                if not char then return end
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if not root then return end
+                for _, obj in ipairs(workspace:GetDescendants()) do
+                    if obj:IsA("BasePart") and obj.Transparency > 0.3 then
+                        local dist = (obj.Position - root.Position).Magnitude
+                        if dist < 15 then
+                            obj.Anchored = true
+                        end
+                    end
+                end
+            end
+            rs.RenderStepped:Connect(anchorNearbyGlass)
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Anti-Break Glass",
+                Text = "Nearby glass tiles anchored!",
+                Duration = 3
+            })
+        ]])()
+    end)
+
+    addSectionHeader(inkPanel, "📍 TELEPORTS (Ink)")
+    addButton(inkPanel, "🏁 TP to RLGL End", function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local ws = workspace
+            local rlgl = ws:FindFirstChild("RedLightGreenLight")
+            if rlgl then
+                for _, v in ipairs(rlgl:GetDescendants()) do
+                    if v:IsA("BasePart") and (v.Name:lower():find("finish") or v.Name:lower():find("cross") or v.Name:lower():find("end")) then
+                        char.HumanoidRootPart.CFrame = CFrame.new(v.Position + Vector3.new(0,5,0))
+                        return
+                    end
+                end
+            end
+        end
+    end)
+
+    addButton(inkPanel, "🪟 TP to Glass Bridge", function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local ws = workspace
+            for _, obj in ipairs(ws:GetDescendants()) do
+                if obj:IsA("BasePart") and obj.Name:lower():find("glass") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(obj.Position + Vector3.new(0,3,0))
+                    return
+                end
+            end
+        end
+    end)
+
+    addButton(inkPanel, "🏠 TP to Safe Room", function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local ws = workspace
+            for _, obj in ipairs(ws:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    local n = obj.Name:lower()
+                    if n:find("safe") or n:find("spawn") or n:find("lobby") or n:find("waiting") then
+                        char.HumanoidRootPart.CFrame = CFrame.new(obj.Position + Vector3.new(0,3,0))
+                        return
+                    end
+                end
+            end
+        end
+    end)
+
+
     -- ========== TAB SWITCHING ==========
-    scriptsBtn.MouseButton1Click:Connect(function()
-        scriptsPanel.Visible = true
-        apeiroPanel.Visible = false
-        erlcPanel.Visible = false
-        jbPanel.Visible = false
-        scriptsBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
-        apeiroBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-        erlcBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-        jbBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-    end)
-    apeiroBtn.MouseButton1Click:Connect(function()
-        scriptsPanel.Visible = false
-        apeiroPanel.Visible = true
-        erlcPanel.Visible = false
-        jbPanel.Visible = false
-        apeiroBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
-        scriptsBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-        erlcBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-        jbBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-    end)
-    erlcBtn.MouseButton1Click:Connect(function()
-        scriptsPanel.Visible = false
-        apeiroPanel.Visible = false
-        erlcPanel.Visible = true
-        jbPanel.Visible = false
-        erlcBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
-        scriptsBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-        apeiroBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-        jbBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-    end)
-    jbBtn.MouseButton1Click:Connect(function()
-        scriptsPanel.Visible = false
-        apeiroPanel.Visible = false
-        erlcPanel.Visible = false
-        jbPanel.Visible = true
-        jbBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
-        scriptsBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-        apeiroBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-        erlcBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 55)
-    end)
+    local allPanels = {scriptsPanel, apeiroPanel, erlcPanel, jbPanel, inkPanel}
+    local allBtns = {scriptsBtn, apeiroBtn, erlcBtn, jbBtn, inkBtn}
+    local activeColor = Color3.fromRGB(0, 150, 200)
+    local inactiveColor = Color3.fromRGB(30, 30, 55)
+    
+    local function switchTab(index)
+        for i, panel in ipairs(allPanels) do
+            panel.Visible = (i == index)
+            allBtns[i].BackgroundColor3 = (i == index) and activeColor or inactiveColor
+        end
+    end
 
-    scriptsPanel.Visible = true
-    apeiroPanel.Visible = false
-    erlcPanel.Visible = false
-    jbPanel.Visible = false
+    scriptsBtn.MouseButton1Click:Connect(function() switchTab(1) end)
+    apeiroBtn.MouseButton1Click:Connect(function() switchTab(2) end)
+    erlcBtn.MouseButton1Click:Connect(function() switchTab(3) end)
+    jbBtn.MouseButton1Click:Connect(function() switchTab(4) end)
+    inkBtn.MouseButton1Click:Connect(function() switchTab(5) end)
 
-    print("✨ Space Hub fully loaded – Scripts, Apeirophobia, ERLC, and JB tabs ready.")
+    switchTab(1)
+
+    print("✨ Space Hub fully loaded – Scripts, Apeirophobia, ERLC, JB, and INK tabs ready.")
 end
