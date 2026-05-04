@@ -1,7 +1,7 @@
 how to execute: loadstring(game:HttpGet('https://raw.githubusercontent.com/Pallockpro/spacehub/main/mainhub'))()
 
 
-Executor: https://drive.google.com/file/d/1wqTn6vZzQIyF7UwPGHF8jnOGSnCEUQTX/view?usp=drive_link
+Executor: https://drive.google.com/file/d/1wqTn6vZzQIyF7UwPGHF8jnOGSnCEUQTX/view?usp=sharing
 
 OR
 
