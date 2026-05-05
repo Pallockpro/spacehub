@@ -14,7 +14,6 @@
   ╚═══╝   ╚═╝╚═╝ ╚═════╝ ╚═╝ ╚═════╝
 --]]
 
-
 --[ Space Hub - Modern GUI with Animated Starfield & ERLC Tab ]--
 -- Services
 local Players = game:GetService("Players")
@@ -2497,6 +2496,15 @@ function InitializeHub()
     inkBtn.MouseButton1Click:Connect(function() switchTab(5) end)
 
     switchTab(1)
+
+    -- ========== HIDE / SHOW WITH P KEY ==========
+    local hubVisible = true
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and input.KeyCode == Enum.KeyCode.P then
+            hubVisible = not hubVisible
+            screenGui.Enabled = hubVisible
+        end
+    end)
 
     print("✨ Space Hub fully loaded – Scripts, Apeirophobia, ERLC, JB, and INK tabs ready.")
 end
