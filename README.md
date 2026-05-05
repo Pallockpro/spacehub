@@ -1,7 +1,18 @@
+Key = "rimuru"
+
+
+
+
+
 how to execute: loadstring(game:HttpGet('https://raw.githubusercontent.com/Pallockpro/spacehub/main/mainhub'))()
 
 
+
+
 Development Discord: https://discord.gg/K5kqFcqZyg
+
+
+
 
 
 Executor: https://drive.google.com/file/d/1wqTn6vZzQIyF7UwPGHF8jnOGSnCEUQTX/view?usp=sharing
